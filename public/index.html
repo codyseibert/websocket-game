@@ -5,9 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <button id="ping">PING</button>
+    <div class="button-group">
+      <button id="left">left</button>
+      <button id="right">right</button>
+      <button id="up">up</button>
+      <button id="down">down</button>
+    </div>
+
+    <div id="board">
+      <div id="player"></div>
+      <div id="food"></div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="index.js"></script>

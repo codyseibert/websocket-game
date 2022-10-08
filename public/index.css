@@ -1,0 +1,29 @@
+body {
+  background: black;
+}
+
+#player {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: blue;
+  width: 10px;
+  height: 10px;
+}
+
+#food {
+  border-radius: 50%;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: yellow;
+  width: 5px;
+  height: 5px;
+}
+
+#board {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  background: gray;
+}
