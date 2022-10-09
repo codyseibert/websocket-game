@@ -5,6 +5,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
+const random = require("random-name");
 
 const CONNECTION_EVENT = "connection";
 
@@ -17,6 +18,7 @@ io.on(CONNECTION_EVENT, (socket) => {
     x: 0,
     y: 0,
     id: socket.id,
+    name: random.first(),
   };
   players.push(player);
 

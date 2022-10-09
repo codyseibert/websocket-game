@@ -20,6 +20,7 @@
   "homepage": "https://github.com/codyseibert/websocket-game#readme",
   "dependencies": {
     "express": "^4.18.2",
+    "random-name": "^0.1.2",
     "socket.io": "^4.5.2"
   },
   "devDependencies": {
