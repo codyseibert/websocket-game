@@ -6,42 +6,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
 
-    <style></style>
+    <style>
+      .player {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+      }
+
+      #board {
+        width: 300px;
+        height: 300px;
+        background: gray;
+      }
+    </style>
   </head>
   <body>
-    <div id="hangman">
-      <form id="guess-controls">
-        <label for="letter">Letter</label>
-        <input id="letter" />
-        <button id="guess">guess</button>
-        <span id="guessed-word"></span>
-      </form>
-    </div>
+    <div id="board"></div>
 
     <script src="/socket.io/socket.io.js"></script>
+
     <script>
       const socket = io();
 
-      const hangman = document.getElementById("hangman");
-      const connectButton = document.getElementById("connect");
-      const usernameInput = document.getElementById("username");
-      const letterInput = document.getElementById("letter");
-      const guessForm = document.getElementById("guess-controls");
-      const guessedWordDisplay = document.getElementById("guessed-word");
+      const boardEl = document.getElementById("board");
 
-      guessForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        if (!letterInput.value || letterInput.value.length !== 1) return;
-        socket.emit("guess", letterInput.value);
-        letterInput.value = "";
+      const playersMap = {};
+      const keysDown = {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+      };
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "d") {
+          keysDown["right"] = true;
+        } else if (e.key === "w") {
+          keysDown["up"] = true;
+        } else if (e.key === "a") {
+          keysDown["left"] = true;
+        } else if (e.key === "s") {
+          keysDown["down"] = true;
+        }
       });
 
-      socket.on("pong", (message) => {
-        console.log(message);
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "d") {
+          keysDown["right"] = false;
+        } else if (e.key === "w") {
+          keysDown["up"] = false;
+        } else if (e.key === "a") {
+          keysDown["left"] = false;
+        } else if (e.key === "s") {
+          keysDown["down"] = false;
+        }
       });
 
-      socket.on("guessedWord", (guessedWord) => {
-        guessedWordDisplay.innerText = guessedWord.split("").join(" ");
+      setInterval(() => {
+        if (keysDown["right"]) {
+          socket.emit("right");
+        } else if (keysDown["up"]) {
+          socket.emit("up");
+        } else if (keysDown["left"]) {
+          socket.emit("left");
+        } else if (keysDown["down"]) {
+          socket.emit("down");
+        }
+      }, 1000 / 30);
+
+      const getRandomColor = () => Math.floor(255 * Math.random());
+
+      socket.on("players", (players) => {
+        try {
+          for (const player of players) {
+            if (!playersMap[player.id]) {
+              playersMap[player.id] = player;
+              const playerEl = document.createElement("div");
+              playerEl.classList.add("player");
+              boardEl.appendChild(playerEl);
+              player.el = playerEl;
+              player.el.style.background = `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`;
+            }
+            playersMap[player.id].el.style.left = player.x + "px";
+            playersMap[player.id].el.style.top = player.y + "px";
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      });
+
+      socket.on("playerDisconnected", (playerId) => {
+        console.log("playerDisconnected", playerId);
+        const player = playersMap[playerId];
+        delete playersMap[playerId];
+        player.el.remove();
       });
     </script>
   </body>

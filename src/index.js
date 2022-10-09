@@ -6,75 +6,44 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 
-const GUESSED_WORD_EVENT = "guessedWord";
-const GUESS_EVENT = "guess";
 const CONNECTION_EVENT = "connection";
 
 app.use(express.static("public"));
 
-const wordsToGuess = [
-  "javascript",
-  "python",
-  "go",
-  "ruby",
-  "rust",
-  "java",
-  "c#",
-  "scala",
-  "closure",
-  "smalltalk",
-  "pawn",
-  "lisp",
-  "php",
-  "matlab",
-  "c++",
-  "cobol",
-  "haskell",
-  "typescript",
-  "assembly",
-  "kotlin",
-  "dart",
-];
-
-let wordToGuess;
-let guessedWord;
-
-const setNextWord = () => {
-  const word = wordsToGuess[parseInt(Math.random() * wordsToGuess.length)];
-  wordToGuess = word;
-  guessedWord = word.split("").fill("_");
-};
-setNextWord();
-
-const getGuessedWord = () => {
-  return guessedWord.join("");
-};
-
-const emitGuessedWord = (channel) => {
-  channel.emit(GUESSED_WORD_EVENT, getGuessedWord());
-};
+let players = [];
 
 io.on(CONNECTION_EVENT, (socket) => {
-  console.log("a user connected");
+  const player = {
+    x: 0,
+    y: 0,
+    id: socket.id,
+  };
+  players.push(player);
 
-  emitGuessedWord(socket);
-
-  socket.on(GUESS_EVENT, (letter) => {
-    let isCorrectGuess = false;
-    [...wordToGuess].forEach((char, i) => {
-      if (char === letter) {
-        guessedWord[i] = char;
-        isCorrectGuess = true;
-      }
-    });
-    if (isCorrectGuess) {
-      if (!guessedWord.includes("_")) {
-        setNextWord();
-      }
-      emitGuessedWord(io);
-    }
+  socket.on("right", () => {
+    player.x += 1;
   });
+  socket.on("left", () => {
+    player.x -= 1;
+  });
+  socket.on("up", () => {
+    player.y -= 1;
+  });
+  socket.on("down", () => {
+    player.y += 1;
+  });
+
+  socket.on("disconnect", () => {
+    players = players.filter((player) => player.id !== socket.id);
+    io.emit("playerDisconnected", socket.id);
+  });
+
+  console.log("a user connected");
 });
+
+setInterval(() => {
+  io.emit("players", players);
+}, 1000 / 10);
 
 server.listen(PORT, () => {
   console.log(`listening on *:${PORT}`);
