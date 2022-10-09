@@ -5,24 +5,43 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+
+    <style></style>
   </head>
   <body>
-    HELLO WORLD
-
-    <button id="ping">ping</button>
+    <div id="hangman">
+      <form id="guess-controls">
+        <label for="letter">Letter</label>
+        <input id="letter" />
+        <button id="guess">guess</button>
+        <span id="guessed-word"></span>
+      </form>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
       const socket = io();
 
-      const pingButton = document.getElementById("ping");
+      const hangman = document.getElementById("hangman");
+      const connectButton = document.getElementById("connect");
+      const usernameInput = document.getElementById("username");
+      const letterInput = document.getElementById("letter");
+      const guessForm = document.getElementById("guess-controls");
+      const guessedWordDisplay = document.getElementById("guessed-word");
 
-      pingButton.addEventListener("click", () => {
-        socket.emit("ping");
+      guessForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (!letterInput.value || letterInput.value.length !== 1) return;
+        socket.emit("guess", letterInput.value);
+        letterInput.value = "";
       });
 
       socket.on("pong", (message) => {
         console.log(message);
+      });
+
+      socket.on("guessedWord", (guessedWord) => {
+        guessedWordDisplay.innerText = guessedWord;
       });
     </script>
   </body>
