@@ -41,10 +41,7 @@
       });
 
       socket.on("guessedWord", (guessedWord) => {
-        guessedWordDisplay.innerText = guessedWord
-          .split("")
-          .map((char, i) => `${char} `)
-          .join("");
+        guessedWordDisplay.innerText = guessedWord.split("").join(" ");
       });
     </script>
   </body>
