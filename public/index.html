@@ -47,10 +47,12 @@
       document.addEventListener("keydown", (e) => {
         if (e.key === "d") {
           keysDown["right"] = true;
-        } else if (e.key === "w") {
-          keysDown["up"] = true;
         } else if (e.key === "a") {
           keysDown["left"] = true;
+        }
+
+        if (e.key === "w") {
+          keysDown["up"] = true;
         } else if (e.key === "s") {
           keysDown["down"] = true;
         }
@@ -59,11 +61,17 @@
       document.addEventListener("keyup", (e) => {
         if (e.key === "d") {
           keysDown["right"] = false;
-        } else if (e.key === "w") {
-          keysDown["up"] = false;
-        } else if (e.key === "a") {
+        }
+
+        if (e.key === "a") {
           keysDown["left"] = false;
-        } else if (e.key === "s") {
+        }
+
+        if (e.key === "w") {
+          keysDown["up"] = false;
+        }
+
+        if (e.key === "s") {
           keysDown["down"] = false;
         }
       });
@@ -71,11 +79,14 @@
       setInterval(() => {
         if (keysDown["right"]) {
           socket.emit("right");
-        } else if (keysDown["up"]) {
+        }
+        if (keysDown["up"]) {
           socket.emit("up");
-        } else if (keysDown["left"]) {
+        }
+        if (keysDown["left"]) {
           socket.emit("left");
-        } else if (keysDown["down"]) {
+        }
+        if (keysDown["down"]) {
           socket.emit("down");
         }
       }, 1000 / 30);
