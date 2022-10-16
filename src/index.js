@@ -57,11 +57,16 @@ const sendMap = (socket) => {
 
 io.on("connect", (socket) => {
   console.log("a user connected");
-  const ipAddress = socket.handshake.address;
-  // if (ipMap[ipAddress]) {
-  //   socket.disconnect();
-  //   return;
-  // }
+
+  const ipAddress =
+    socket.handshake.headers["x-forwarded-for"] ??
+    socket.handshake.headers["x-real-ip"] ??
+    socket.handshake.address;
+
+  if (ipMap[ipAddress]) {
+    socket.disconnect();
+    return;
+  }
   ipMap[ipAddress] = true;
 
   sendMap(socket);
