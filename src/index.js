@@ -12,6 +12,8 @@ const TICK_RATE = 40;
 const TILE_SIZE = 32;
 const COIN_SIZE = 6;
 const PLAYER_SPEED = 5.0;
+const END_GAME_SCORE = 10;
+const COIN_SPAWN_RATE = 500;
 const PLAYER_SIZE = 16;
 const CONTROLS = {
   UP: "up",
@@ -60,6 +62,7 @@ for (let row = 0; row < map.length; row++) {
 let coins = [];
 let players = [];
 const playerSocketMap = {};
+const socketMap = {};
 const controlsMap = {};
 const ipMap = {};
 const canJump = {};
@@ -97,6 +100,7 @@ io.on("connect", (socket) => {
     color: `#${Math.floor(Math.random() * (0xffffff + 1)).toString(16)}`,
   };
   playerSocketMap[socket.id] = player;
+  socketMap[socket.id] = socket;
   players.push(player);
 
   socket.on("disconnect", () => {
@@ -157,7 +161,17 @@ const spawnCoin = () => {
     y: randomRow * TILE_SIZE,
   });
 };
-setInterval(spawnCoin, 1000);
+setInterval(spawnCoin, COIN_SPAWN_RATE);
+
+const resetGame = () => {
+  for (const player of players) {
+    player.score = 0;
+    player.x = 100;
+    player.y = 100;
+    player.vx = 0;
+    player.vy = 0;
+  }
+};
 
 const tick = (delta) => {
   for (const player of players) {
@@ -168,7 +182,10 @@ const tick = (delta) => {
       if (isOverlap(getCoinBoundingBox(coin), getPlayerBoundingBox(player))) {
         player.score++;
         coins.splice(i, 1);
-        io.emit("playCoinSound");
+        socketMap[player.id].emit("playCoinSound");
+        if (player.score > END_GAME_SCORE) {
+          resetGame();
+        }
       }
     }
 
