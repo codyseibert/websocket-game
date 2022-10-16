@@ -30,10 +30,12 @@
       ctx.fillStyle = "red";
 
       const TILE_SIZE = 32;
+      const COIN_SIZE = 6;
       const PLAYER_SIZE = 16;
 
       let map = [[]];
       let players = [];
+      let coins = [];
       const controls = {
         up: false,
         down: false,
@@ -56,6 +58,10 @@
 
       socket.on("players", (serverPlayers) => {
         players = serverPlayers;
+      });
+
+      socket.on("coins", (serverCoins) => {
+        coins = serverCoins;
       });
 
       document.addEventListener("keydown", (e) => {
@@ -86,6 +92,10 @@
               );
             }
           }
+        }
+        for (const coin of coins) {
+          ctx.fillStyle = "#FF00FF";
+          ctx.fillRect(coin.x, coin.y, COIN_SIZE, COIN_SIZE);
         }
 
         for (let player of players) {
