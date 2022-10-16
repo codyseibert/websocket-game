@@ -17,7 +17,9 @@ const CONTROLS = {
   DOWN: "down",
   LEFT: "left",
   RIGHT: "right",
+  JUMP: "jump",
 };
+const JUMP_SPEED = -10;
 
 const map = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -153,6 +155,10 @@ const tick = (delta) => {
     if (isCollidingWithMap(player)) {
       player.y -= player.vy;
       player.vy = 0;
+    }
+
+    if (playerControls[CONTROLS.JUMP]) {
+      player.vy = JUMP_SPEED;
     }
   }
 
