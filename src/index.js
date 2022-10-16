@@ -5,6 +5,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
+const random = require("random-name");
 
 const GRAVITY = 0.0128;
 const TICK_RATE = 30;
@@ -56,10 +57,11 @@ const sendMap = (socket) => {
 
 io.on("connect", (socket) => {
   console.log("a user connected");
-  const ipAddress = socket.client.conn.remoteAddress;
-  if (ipMap[ipAddress]) {
-    return socket.disconnect();
-  }
+  const ipAddress = socket.handshake.address;
+  // if (ipMap[ipAddress]) {
+  //   socket.disconnect();
+  //   return;
+  // }
   ipMap[ipAddress] = true;
 
   sendMap(socket);
@@ -69,6 +71,7 @@ io.on("connect", (socket) => {
     y: 100,
     vx: 0,
     vy: 0,
+    name: random.first(),
     id: socket.id,
   };
   playerSocketMap[socket.id] = player;

@@ -87,8 +87,9 @@
 
         for (let player of players) {
           ctx.fillStyle = "#00FF00";
-
           ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+          ctx.fillStyle = "#000000";
+          ctx.fillText(player.name, player.x - 10, player.y - 10);
         }
       }
 
