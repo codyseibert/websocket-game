@@ -46,6 +46,7 @@ for (let row = 0; row < map.length; row++) {
 let players = [];
 const playerSocketMap = {};
 const controlsMap = {};
+const ipMap = {};
 
 app.use(express.static("public"));
 
@@ -55,6 +56,12 @@ const sendMap = (socket) => {
 
 io.on("connect", (socket) => {
   console.log("a user connected");
+  const ipAddress = socket.client.conn.remoteAddress;
+  if (ipMap[ipAddress]) {
+    return socket.disconnect();
+  }
+  ipMap[ipAddress] = true;
+
   sendMap(socket);
 
   const player = {
@@ -69,6 +76,7 @@ io.on("connect", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("a user disconnected");
+    delete ipMap[ipAddress];
     delete playerSocketMap[socket.id];
     players = players.filter((player) => player.id !== socket.id);
   });
