@@ -6,125 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
 
-    <style>
-      .player {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-      }
-
-      #board {
-        width: 300px;
-        height: 300px;
-        background: gray;
-      }
-
-      .name {
-        position: absolute;
-        top: -10px;
-        left: -5px;
-        font-size: 10px;
-      }
-    </style>
+    <style></style>
   </head>
   <body>
-    <div id="board"></div>
+    <canvas id="canvas"></canvas>
 
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
       const socket = io();
+      const canvas = document.getElementById("canvas");
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      const lastRender = 0;
+      ctx.fillStyle = "red";
 
-      const boardEl = document.getElementById("board");
-      const playersMap = {};
-      const keysDown = {
-        up: false,
-        down: false,
-        left: false,
-        right: false,
-      };
+      function update(delta) {}
 
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "d") {
-          keysDown["right"] = true;
-        } else if (e.key === "a") {
-          keysDown["left"] = true;
-        }
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillRect(50, 50, 30, 30);
+      }
 
-        if (e.key === "w") {
-          keysDown["up"] = true;
-        } else if (e.key === "s") {
-          keysDown["down"] = true;
-        }
-      });
+      function loop(timestamp) {
+        const delta = timestamp - lastRender;
 
-      document.addEventListener("keyup", (e) => {
-        if (e.key === "d") {
-          keysDown["right"] = false;
-        }
+        update(delta);
+        draw();
 
-        if (e.key === "a") {
-          keysDown["left"] = false;
-        }
-
-        if (e.key === "w") {
-          keysDown["up"] = false;
-        }
-
-        if (e.key === "s") {
-          keysDown["down"] = false;
-        }
-      });
-
-      setInterval(() => {
-        if (keysDown["right"]) {
-          socket.emit("right");
-        }
-        if (keysDown["up"]) {
-          socket.emit("up");
-        }
-        if (keysDown["left"]) {
-          socket.emit("left");
-        }
-        if (keysDown["down"]) {
-          socket.emit("down");
-        }
-      }, 1000 / 30);
-
-      const getRandomColor = () => Math.floor(255 * Math.random());
-
-      socket.on("players", (players) => {
-        for (const player of players) {
-          if (!playersMap[player.id]) {
-            playersMap[player.id] = player;
-            const playerEl = document.createElement("div");
-            const nameEl = document.createElement("div");
-            playerEl.classList.add("player");
-            nameEl.classList.add("name");
-            boardEl.appendChild(playerEl);
-            playerEl.append(nameEl);
-            nameEl.innerText = player.name;
-            player.el = playerEl;
-            player.el.style.background = `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`;
-            if (player.id === socket.id) {
-              player.el.style.border = "1px solid red";
-            }
-          }
-          playersMap[player.id].el.style.left = player.x + "px";
-          playersMap[player.id].el.style.top = player.y + "px";
-        }
-      });
-
-      socket.on("playerDisconnected", (playerId) => {
-        console.log("playerDisconnected", playerId);
-        const player = playersMap[playerId];
-        delete playersMap[playerId];
-        player.el.remove();
-      });
-
-      socket.on("id", (id) => {
-        myId = id;
-      });
+        lastRender = timestamp;
+        window.requestAnimationFrame(loop);
+      }
+      window.requestAnimationFrame(loop);
     </script>
   </body>
 </html>
