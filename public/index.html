@@ -9,6 +9,7 @@
     <style>
       body {
         margin: 0;
+        overflow: hidden;
       }
     </style>
   </head>
@@ -58,12 +59,10 @@
       });
 
       document.addEventListener("keydown", (e) => {
-        e.preventDefault();
         controls[keyMap[e.key]] = true;
       });
 
       document.addEventListener("keyup", (e) => {
-        e.preventDefault();
         controls[keyMap[e.key]] = false;
       });
 
@@ -90,6 +89,16 @@
         }
 
         for (let player of players) {
+          if (player.id === socket.id) {
+            ctx.fillStyle = "#ff0000";
+            ctx.fillRect(
+              player.x - 1,
+              player.y - 1,
+              PLAYER_SIZE + 2,
+              PLAYER_SIZE + 2
+            );
+          }
+
           ctx.fillStyle = player.color;
           ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
           ctx.fillStyle = "#000000";
