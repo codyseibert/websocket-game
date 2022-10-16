@@ -44,6 +44,8 @@
       let lastRender = 0;
       ctx.fillStyle = "red";
 
+      const coinAudio = new Audio("coin.mp3");
+
       const TILE_SIZE = 32;
       const COIN_SIZE = 6;
       const PLAYER_SIZE = 16;
@@ -91,6 +93,11 @@
 
       socket.on("coins", (serverCoins) => {
         coins = serverCoins;
+      });
+
+      socket.on("playCoinSound", () => {
+        coinAudio.currentTime = 0;
+        coinAudio.play();
       });
 
       document.addEventListener("keydown", (e) => {

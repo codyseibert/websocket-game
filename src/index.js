@@ -168,6 +168,7 @@ const tick = (delta) => {
       if (isOverlap(getCoinBoundingBox(coin), getPlayerBoundingBox(player))) {
         player.score++;
         coins.splice(i, 1);
+        io.emit("playCoinSound");
       }
     }
 
