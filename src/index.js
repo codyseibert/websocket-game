@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 const random = require("random-name");
 
 const GRAVITY = 0.0228;
-const TICK_RATE = 30;
+const TICK_RATE = 40;
 const TILE_SIZE = 32;
 const COIN_SIZE = 6;
 const PLAYER_SPEED = 5.0;
@@ -198,6 +198,12 @@ const tick = (delta) => {
     if (playerControls[CONTROLS.JUMP] && canJump[player.id]) {
       canJump[player.id] = false;
       player.vy = JUMP_SPEED;
+    }
+
+    if (player.y > map.length * TILE_SIZE * 2) {
+      player.x = 100;
+      player.y = 100;
+      player.vy = 0;
     }
   }
 
