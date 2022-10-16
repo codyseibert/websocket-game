@@ -80,6 +80,7 @@ io.on("connect", (socket) => {
     vy: 0,
     name: random.first(),
     id: socket.id,
+    color: `#${Math.floor(Math.random() * (0xffffff + 1)).toString(16)}`,
   };
   playerSocketMap[socket.id] = player;
   players.push(player);
