@@ -81,10 +81,10 @@ io.on("connect", (socket) => {
     socket.handshake.headers["x-real-ip"] ??
     socket.handshake.address;
 
-  if (ipMap[ipAddress]) {
-    socket.disconnect();
-    return;
-  }
+  // if (ipMap[ipAddress]) {
+  //   socket.disconnect();
+  //   return;
+  // }
   ipMap[ipAddress] = true;
 
   sendMap(socket);
