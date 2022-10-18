@@ -153,6 +153,7 @@ const isCollidingWithMap = (player) => {
 };
 
 const spawnCoin = () => {
+  if (coins.length > 100) return;
   const randomRow = Math.floor(Math.random() * map.length);
   const randomCol = Math.floor(Math.random() * map[0].length);
   if (map[randomRow][randomCol] !== 0) return;
