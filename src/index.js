@@ -6,10 +6,12 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 const random = require("random-name");
+const { loadTmxMap } = require("./loadTmxMap");
+const { loadMap } = require("./loadMap");
 
 const GRAVITY = 0.0228;
 const TICK_RATE = 40;
-const TILE_SIZE = 32;
+const TILE_SIZE = 128;
 const COIN_SIZE = 6;
 const PLAYER_SPEED = 5.0;
 const END_GAME_SCORE = 10;
@@ -24,28 +26,13 @@ const CONTROLS = {
 };
 const JUMP_SPEED = -12;
 
-const map = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-  [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
+let map = [[]];
+let gameMap = {};
+
+loadMap("default").then((newMap) => {
+  map = newMap.grid;
+  gameMap = newMap;
+});
 
 const collidables = [];
 for (let row = 0; row < map.length; row++) {
@@ -70,7 +57,7 @@ const canJump = {};
 app.use(express.static("public"));
 
 const sendMap = (socket) => {
-  socket.emit("map", map);
+  socket.emit("map", { map, gameMap });
 };
 
 io.on("connect", (socket) => {
@@ -81,10 +68,10 @@ io.on("connect", (socket) => {
     socket.handshake.headers["x-real-ip"] ??
     socket.handshake.address;
 
-  // if (ipMap[ipAddress]) {
-  //   socket.disconnect();
-  //   return;
-  // }
+  if (ipMap[ipAddress]) {
+    socket.disconnect();
+    return;
+  }
   ipMap[ipAddress] = true;
 
   sendMap(socket);
