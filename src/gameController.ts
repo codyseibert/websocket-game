@@ -11,19 +11,10 @@ import {
 import random from "random-name";
 
 import { getCollidables, getMap, loadMap } from "./mapController";
-import { getControlsForPlayer, io } from "./socketController";
+import { emitPlayers, getControlsForPlayer } from "./socketController";
 
-export let players: Player[] = [];
+export let players: TPlayer[] = [];
 const canJump: Record<string, boolean> = {};
-
-type Player = {
-  id: string;
-  x: number;
-  y: number;
-  score: number;
-  vx: number;
-  vy: number;
-};
 
 export const removePlayer = (id: string) => {
   players = players.filter((player) => player.id !== id);
@@ -84,7 +75,7 @@ const tick = (delta: number) => {
     }
   }
 
-  io.emit("players", players);
+  emitPlayers(players);
 };
 
 loadMap("default");

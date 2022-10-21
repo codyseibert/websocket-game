@@ -7,6 +7,7 @@ export const PLAYER_SPEED = 0.2;
 export const END_GAME_SCORE = 10;
 export const COIN_SPAWN_RATE = 500;
 export const PLAYER_SIZE = 16;
+export const LIMIT_IP = process.env.NODE_ENV === "production" ? true : false;
 export const CONTROLS = {
   UP: "up",
   DOWN: "down",

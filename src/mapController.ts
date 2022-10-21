@@ -1,12 +1,12 @@
 const tmx = require("tmx-parser");
 const { TILE_SIZE } = require("./constants");
 
-let map = [[]];
+let map: number[][] = [[]];
 let gameMap = {};
 let collidables: any[] = [];
 
 const maps = {
-  default: "./public/maps/platforms.tmx",
+  default: "./maps/platforms.tmx",
 };
 
 const loadTmxMap = (filename: string): any => {
@@ -36,7 +36,7 @@ export const loadMap = async (mapName) => {
 
   const firstTileSet = tmxMap.tileSets[0];
 
-  const newMap = {
+  const newMap: TGameMap = {
     grid,
     tileset: {
       image: firstTileSet.image.source.replace("..", ""),

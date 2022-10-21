@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+#leaderboard {
+  background: black;
+  color: white;
+  position: fixed;
+  right: 0px;
+  width: 140px;
+  top: 0px;
+  height: 100vh;
+  padding: 10px;
+  font-size: 18px;
+}
