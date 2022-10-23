@@ -6,7 +6,7 @@
   "scripts": {
     "dev:client": "parcel client/index.html",
     "dev:server": "nodemon src/index.ts",
-    "start": "npm run src/index.ts"
+    "start": "node src/index.ts"
   },
   "repository": {
     "type": "git",
