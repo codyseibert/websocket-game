@@ -1,3 +1,5 @@
+import { TPoint } from "./geom";
+
 const tmx = require("tmx-parser");
 const { TILE_SIZE } = require("./constants");
 
@@ -62,6 +64,19 @@ export const loadMap = async (mapName) => {
     }
   }
 };
+
+const ZOMBIE_SPAWN: TPoint = {
+  x: 100,
+  y: 100,
+};
+
+const HUMAN_SPAWN: TPoint = {
+  x: 400,
+  y: 100,
+};
+
+export const getZombieSpawn = () => ZOMBIE_SPAWN;
+export const getHumanSpawn = () => HUMAN_SPAWN;
 
 export const getCollidables = () => collidables;
 

@@ -1,10 +1,4 @@
-import {
-  getPlayerBoundingBox,
-  isCollidingWithMap,
-  isOverlap,
-  TPoint,
-} from "./geom";
-
+import { isCollidingWithMap } from "./geom";
 import {
   TICK_RATE,
   CONTROLS,
@@ -12,39 +6,28 @@ import {
   GRAVITY,
   JUMP_SPEED,
   TILE_SIZE,
-  PLAYERS_NEEDED,
-  HUMAN_COLOR,
-  ZOMBIE_COLOR,
-  GAME_LENGTH,
 } from "./constants";
 import random from "random-name";
-
-import { getCollidables, getMap, loadMap } from "./mapController";
+import {
+  getCollidables,
+  getHumanSpawn,
+  getMap,
+  getZombieSpawn,
+  loadMap,
+} from "./mapController";
 import {
   emitPlayers,
   getControlsForPlayer,
   emitGameState,
-  emitTimeLeft,
-  emitMidGameTime,
-  emitWonMessage,
 } from "./socketController";
-import { io } from "socket.io-client";
+import { handleWaitingState } from "./states/waitingState";
+import { handlePlayingState } from "./states/playingState";
 
 export let players: TPlayer[] = [];
 const canJump: Record<string, boolean> = {};
 
 export const getTimeLeft = () => {
   return timeLeft;
-}
-
-const ZOMBIE_SPAWN: TPoint = {
-  x: 100,
-  y: 100,
-};
-
-const HUMAN_SPAWN: TPoint = {
-  x: 200,
-  y: 100,
 };
 
 export enum GAME_STATE {
@@ -53,12 +36,17 @@ export enum GAME_STATE {
   MidGame = "MIDGAME",
 }
 
+export enum Teams {
+  Humans = "HUMANS",
+  Zombies = "ZOMBIES",
+}
+
 let timeLeft = 0;
 let gameStartTime = 0;
 let gameState: GAME_STATE = GAME_STATE.WaitingForPlayers;
 
 let waitingTime = 0;
-let won = '';
+let won = "";
 
 export const removePlayer = (id: string) => {
   players = players.filter((player) => player.id !== id);
@@ -80,71 +68,11 @@ export function createPlayer(id: string) {
   return player;
 }
 
-const gotoWaitingState = (winner: string) => {
+export const respawnPlayers = () => {
   for (const player of players) {
-    player.isZombie = false;
-    player.color = "#FF00FF";
-  }
-  gameState = GAME_STATE.WaitingForPlayers;
-  respawnPlayers();
-  emitGameState(gameState);
-  if (winner) {
-    won = winner;
-    emitWonMessage(winner);
-  }
-};
-
-const goToMidGameState = async (winner: string) => {
-  for (const player of players) {
-    player.isZombie = false;
-    player.color = "#FF00FF";
-  }
-  won = winner;
-  emitWonMessage(winner);
-  gameState = GAME_STATE.MidGame
-  respawnPlayers();
-  emitGameState(gameState);
-  waitingTime = 5;
-  emitMidGameTime(waitingTime);
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  for (let i = 4; i > 0; i--) {
-    waitingTime = i;
-    emitMidGameTime(waitingTime);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-  startGame();
-}
-
-const startGame = () => {
-  gameState = GAME_STATE.Playing;
-  gameStartTime = performance.now();
-  timeLeft = GAME_LENGTH / 1000;
-  emitTimeLeft(timeLeft);
-  players.forEach(turnHuman);
-  pickZombie();
-  respawnPlayers();
-  emitGameState(gameState);
-};
-
-const turnHuman = (player) => {
-  player.color = HUMAN_COLOR;
-  player.isZombie = false;
-};
-
-const turnZombie = (player) => {
-  player.color = ZOMBIE_COLOR;
-  player.isZombie = true;
-};
-
-const respawnPlayers = () => {
-  for (const player of players) {
-    if (player.isZombie) {
-      player.x = ZOMBIE_SPAWN.x;
-      player.y = ZOMBIE_SPAWN.y;
-    } else {
-      player.x = HUMAN_SPAWN.x;
-      player.y = HUMAN_SPAWN.y;
-    }
+    const spawnPoint = player.isZombie ? getZombieSpawn() : getHumanSpawn();
+    player.x = spawnPoint.x;
+    player.y = spawnPoint.y;
     player.vx = 0;
     player.vy = 0;
   }
@@ -162,9 +90,9 @@ export const getWaitingTime = () => {
   return waitingTime;
 };
 
-const pickZombie = () => {
-  const zombie = players[Math.floor(Math.random() * players.length)];
-  turnZombie(zombie);
+export const setGameState = (newState: GAME_STATE) => {
+  gameState = newState;
+  emitGameState(gameState);
 };
 
 const tick = (delta: number) => {
@@ -208,68 +136,15 @@ const tick = (delta: number) => {
   }
 
   if (gameState === GAME_STATE.WaitingForPlayers) {
-    handleWaitingState();
+    handleWaitingState(players);
   } else if (gameState === GAME_STATE.Playing) {
-    handlePlayingState();
+    handlePlayingState(players, gameStartTime);
   }
 
   emitPlayers(players);
 };
 
-function handleWaitingState() {
-  const shouldStartGame = players.length >= PLAYERS_NEEDED;
-  if (shouldStartGame) {
-    startGame();
-  }
-}
-
-function endGame(won: string) {
-  timeLeft = 0;
-  emitTimeLeft(timeLeft);
-  if (players.length >= PLAYERS_NEEDED) {
-    goToMidGameState(won)
-  } else {
-    gotoWaitingState(won);
-  }
-}
-
-function handlePlayingState() {
-  const noMoreZombies = players.every((player) => !player.isZombie);
-  const noMoreHumans = players.every((player) => player.isZombie);
-
-  if (
-    noMoreZombies ||
-    performance.now() - gameStartTime >= GAME_LENGTH
-  ) {
-    endGame('Humans');
-  } else if (noMoreHumans) {
-    endGame('Zombies');
-  }
-
-  const zombies = players.filter((player) => player.isZombie);
-  const humans = players.filter((player) => !player.isZombie);
-
-  for (const zombie of zombies) {
-    for (const human of humans) {
-      if (
-        isOverlap(getPlayerBoundingBox(zombie), getPlayerBoundingBox(human))
-      ) {
-        turnZombie(human);
-      }
-    }
-  }
-}
-
 loadMap("default");
-
-const setTimeLeft = () => {
-  if (gameState == 'PLAYING') {
-    timeLeft = Math.ceil((GAME_LENGTH - (performance.now() - gameStartTime)) / 1000);
-    emitTimeLeft(timeLeft);
-  }
-}
-
-setInterval(setTimeLeft, 1000);
 
 let lastUpdate = Date.now();
 setInterval(() => {

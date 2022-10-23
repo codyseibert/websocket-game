@@ -52,18 +52,6 @@ export const startSocketController = (server) => {
   io.on("connect", (socket: Socket) => {
     console.log("a user connected");
 
-    let time = getTimeLeft();
-
-    socket.emit("timeLeft", time);
-
-    if (getGameState() === "MIDGAME") {
-      socket.emit("waitingTime", getWaitingTime());
-    }
-
-    let won = getWhoWon();
-
-    socket.emit("wonMessage", won);
-
     const ipAddress = (socket.handshake.headers["x-forwarded-for"] ??
       socket.handshake.headers["x-real-ip"] ??
       socket.handshake.address) as string;
@@ -76,6 +64,11 @@ export const startSocketController = (server) => {
 
     socket.emit("map", { map: getMap(), gameMap: getGameMap() });
     socket.emit("gameState", getGameState());
+    socket.emit("timeLeft", getTimeLeft());
+    if (getGameState() === GAME_STATE.MidGame) {
+      socket.emit("waitingTime", getWaitingTime());
+    }
+    socket.emit("wonMessage", getWhoWon());
 
     const player = createPlayer(socket.id);
     playerSocketMap[socket.id] = player;
