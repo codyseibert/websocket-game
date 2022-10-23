@@ -1,13 +1,18 @@
 const { PLAYER_SIZE, TILE_SIZE } = require("./constants");
 
-type Rectangle = {
+type TRectangle = {
   x: number;
   y: number;
   width: number;
   height: number;
 };
 
-const isOverlap = (rect1: Rectangle, rect2: Rectangle) => {
+export type TPoint = {
+  x: number;
+  y: number;
+};
+
+export const isOverlap = (rect1: TRectangle, rect2: TRectangle) => {
   if (
     rect1.x < rect2.x + rect2.width &&
     rect1.x + rect1.width > rect2.x &&
@@ -26,7 +31,7 @@ const getBoundingBoxFactory = (STATIC_SIZE: number) => (entity) => {
     height: STATIC_SIZE,
     x: entity.x,
     y: entity.y,
-  } as Rectangle;
+  } as TRectangle;
 };
 
 export const getPlayerBoundingBox = getBoundingBoxFactory(PLAYER_SIZE);

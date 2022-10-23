@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { GAME_STATE } from "../../src/gameController";
 import tilesheetUrl from "../images/tilesheet.png";
 
 const socket = io("ws://localhost:3000");
@@ -36,6 +37,10 @@ const keyMap = {
   " ": "jump",
 };
 
+let gameState;
+let startTime = 0;
+let gameLength = 0;
+
 const mapImage = new Image();
 
 socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
@@ -43,6 +48,18 @@ socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
   gameMap = serverGameMap;
   mapImage.src = tilesheetUrl;
 });
+
+socket.on("gameState", (serverGameState) => {
+  gameState = serverGameState;
+});
+
+socket.on(
+  "gameTimes",
+  ({ startTime: serverStartTime, gameLength: serverGameLength }) => {
+    startTime = serverStartTime;
+    gameLength = serverGameLength;
+  }
+);
 
 socket.on("players", (serverPlayers) => {
   players = serverPlayers;
@@ -104,7 +121,7 @@ function draw() {
 
   const playerToFocus = players.find((player) => player.id === socket.id);
   if (playerToFocus) {
-    cx = interpolations[playerToFocus.id].x - canvas.width / 2 + 140;
+    cx = interpolations[playerToFocus.id].x - canvas.width / 2;
     cy = interpolations[playerToFocus.id].y - canvas.height / 2;
   }
 
@@ -141,7 +158,19 @@ function draw() {
     ctx.fillStyle = player.color;
     ctx.fillRect(px - cx, py - cy, PLAYER_SIZE, PLAYER_SIZE);
     ctx.fillStyle = "#000000";
+    ctx.font = `16px Verdana`;
     ctx.fillText(player.name, px - 10 - cx, py - 10 - cy);
+  }
+
+  ctx.fillStyle = "#000000";
+  ctx.font = `24px Verdana`;
+  if (gameState === "PLAYING") {
+    const timeLeft = ((gameLength - (Date.now() - startTime)) / 1000).toFixed(
+      3
+    );
+    ctx.fillText(`time left ${timeLeft} seconds`, 50, 50);
+  } else if (gameState === "WAITING_FOR_PLAYERS") {
+    ctx.fillText(`waiting for players`, 50, 50);
   }
 }
 

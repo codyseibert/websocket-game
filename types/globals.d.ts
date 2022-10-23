@@ -9,6 +9,7 @@ type TPlayer = {
   vy: number;
   color: string;
   name: string;
+  isZombie: boolean;
 };
 
 type TGameMap = {

@@ -1,4 +1,9 @@
-import { createPlayer, removePlayer } from "./gameController";
+import {
+  createPlayer,
+  GAME_STATE,
+  getGameState,
+  removePlayer,
+} from "./gameController";
 import { getMap, getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
 import { LIMIT_IP } from "./constants";
@@ -15,6 +20,14 @@ export const getControlsForPlayer = (playerId: string) => {
 
 export const emitPlayers = (players: any) => {
   io.emit("players", players);
+};
+
+export const emitGameState = (gameState: GAME_STATE) => {
+  io.emit("gameState", gameState);
+};
+
+export const emitGameTimes = (startTime: number, gameLength) => {
+  io.emit("gameTimes", { startTime, gameLength });
 };
 
 export const startSocketController = (server) => {
@@ -39,6 +52,7 @@ export const startSocketController = (server) => {
     ipSet.add(ipAddress);
 
     socket.emit("map", { map: getMap(), gameMap: getGameMap() });
+    socket.emit("gameState", getGameState());
 
     const player = createPlayer(socket.id);
     playerSocketMap[socket.id] = player;

@@ -1,4 +1,9 @@
-import { isCollidingWithMap } from "./geom";
+import {
+  getPlayerBoundingBox,
+  isCollidingWithMap,
+  isOverlap,
+  TPoint,
+} from "./geom";
 
 import {
   TICK_RATE,
@@ -7,33 +12,114 @@ import {
   GRAVITY,
   JUMP_SPEED,
   TILE_SIZE,
+  PLAYERS_NEEDED,
+  HUMAN_COLOR,
+  ZOMBIE_COLOR,
+  GAME_LENGTH,
 } from "./constants";
 import random from "random-name";
 
 import { getCollidables, getMap, loadMap } from "./mapController";
-import { emitPlayers, getControlsForPlayer } from "./socketController";
+import {
+  emitPlayers,
+  getControlsForPlayer,
+  emitGameState,
+  emitGameTimes,
+} from "./socketController";
 
 export let players: TPlayer[] = [];
 const canJump: Record<string, boolean> = {};
+
+const ZOMBIE_SPAWN: TPoint = {
+  x: 100,
+  y: 100,
+};
+
+const HUMAN_SPAWN: TPoint = {
+  x: 200,
+  y: 100,
+};
+
+export enum GAME_STATE {
+  WaitingForPlayers = "WAITING_FOR_PLAYERS",
+  Playing = "PLAYING",
+}
+
+let gameStartTime = 0;
+let gameState: GAME_STATE = GAME_STATE.WaitingForPlayers;
 
 export const removePlayer = (id: string) => {
   players = players.filter((player) => player.id !== id);
 };
 
 export function createPlayer(id: string) {
-  const player = {
+  const player: TPlayer = {
     x: 100,
     y: 100,
     vx: 0,
     vy: 0,
     score: 0,
     name: random.first(),
+    isZombie: false,
     id,
     color: `#${Math.floor(Math.random() * (0xffffff + 1)).toString(16)}`,
   };
   players.push(player);
   return player;
 }
+
+const gotoWaitingState = () => {
+  for (const player of players) {
+    player.isZombie = false;
+    player.color = "#FF00FF";
+  }
+  gameState = GAME_STATE.WaitingForPlayers;
+  respawnPlayers();
+  emitGameState(gameState);
+};
+
+const startGame = () => {
+  gameState = GAME_STATE.Playing;
+  gameStartTime = performance.now();
+  players.forEach(turnHuman);
+  pickZombie();
+  respawnPlayers();
+  emitGameState(gameState);
+  emitGameTimes(Date.now(), GAME_LENGTH);
+};
+
+const turnHuman = (player) => {
+  player.color = HUMAN_COLOR;
+  player.isZombie = false;
+};
+
+const turnZombie = (player) => {
+  player.color = ZOMBIE_COLOR;
+  player.isZombie = true;
+};
+
+const respawnPlayers = () => {
+  for (const player of players) {
+    if (player.isZombie) {
+      player.x = ZOMBIE_SPAWN.x;
+      player.y = ZOMBIE_SPAWN.y;
+    } else {
+      player.x = HUMAN_SPAWN.x;
+      player.y = HUMAN_SPAWN.y;
+    }
+    player.vx = 0;
+    player.vy = 0;
+  }
+};
+
+export const getGameState = () => {
+  return gameState;
+};
+
+const pickZombie = () => {
+  const zombie = players[Math.floor(Math.random() * players.length)];
+  turnZombie(zombie);
+};
 
 const tick = (delta: number) => {
   for (const player of players) {
@@ -75,8 +161,55 @@ const tick = (delta: number) => {
     }
   }
 
+  if (gameState === GAME_STATE.WaitingForPlayers) {
+    handleWaitingState();
+  } else if (gameState === GAME_STATE.Playing) {
+    handlePlayingState();
+  }
+
   emitPlayers(players);
 };
+
+function handleWaitingState() {
+  const shouldStartGame = players.length >= PLAYERS_NEEDED;
+  if (shouldStartGame) {
+    startGame();
+  }
+}
+
+function endGame() {
+  if (players.length >= PLAYERS_NEEDED) {
+    startGame();
+  } else {
+    gotoWaitingState();
+  }
+}
+
+function handlePlayingState() {
+  const noMoreZombies = players.every((player) => !player.isZombie);
+  const noMoreHumans = players.every((player) => player.isZombie);
+
+  if (
+    noMoreZombies ||
+    noMoreHumans ||
+    performance.now() - gameStartTime >= GAME_LENGTH
+  ) {
+    endGame();
+  }
+
+  const zombies = players.filter((player) => player.isZombie);
+  const humans = players.filter((player) => !player.isZombie);
+
+  for (const zombie of zombies) {
+    for (const human of humans) {
+      if (
+        isOverlap(getPlayerBoundingBox(zombie), getPlayerBoundingBox(human))
+      ) {
+        turnZombie(human);
+      }
+    }
+  }
+}
 
 loadMap("default");
 
