@@ -3,10 +3,13 @@ import {
   GAME_STATE,
   getGameState,
   removePlayer,
+  getTimeLeft,
+  getWaitingTime,
+  getWhoWon,
 } from "./gameController";
 import { getMap, getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
-import { LIMIT_IP } from "./constants";
+import { LIMIT_IP, GAME_LENGTH } from "./constants";
 
 let io;
 const controlsMap = {};
@@ -26,8 +29,16 @@ export const emitGameState = (gameState: GAME_STATE) => {
   io.emit("gameState", gameState);
 };
 
-export const emitGameTimes = (startTime: number, gameLength) => {
-  io.emit("gameTimes", { startTime, gameLength });
+export const emitMidGameTime = (time: number) => {
+  io.emit("waitingTime", time);
+};
+
+export const emitWonMessage = (message: string) => {
+  io.emit("wonMessage", message);
+};
+
+export const emitTimeLeft = (time: number) => {
+  io.emit("timeLeft", time);
 };
 
 export const startSocketController = (server) => {
@@ -40,6 +51,18 @@ export const startSocketController = (server) => {
 
   io.on("connect", (socket: Socket) => {
     console.log("a user connected");
+
+    let time = getTimeLeft();
+
+    socket.emit("timeLeft", time);
+
+    if (getGameState() === "MIDGAME") {
+      socket.emit("waitingTime", getWaitingTime());
+    }
+
+    let won = getWhoWon();
+
+    socket.emit("wonMessage", won);
 
     const ipAddress = (socket.handshake.headers["x-forwarded-for"] ??
       socket.handshake.headers["x-real-ip"] ??

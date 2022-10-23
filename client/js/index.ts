@@ -38,8 +38,10 @@ const keyMap = {
 };
 
 let gameState;
-let startTime = 0;
-let gameLength = 0;
+let timeLeft = 0;
+let waitingTime = 0;
+
+let wonMessage = '';
 
 const mapImage = new Image();
 
@@ -53,13 +55,19 @@ socket.on("gameState", (serverGameState) => {
   gameState = serverGameState;
 });
 
-socket.on(
-  "gameTimes",
-  ({ startTime: serverStartTime, gameLength: serverGameLength }) => {
-    startTime = serverStartTime;
-    gameLength = serverGameLength;
+socket.on("timeLeft", (time) => {
+    timeLeft = time;
   }
 );
+
+socket.on("waitingTime", (time) => {
+  waitingTime = time;
+}
+);
+
+socket.on("wonMessage", (message: string) => {
+  wonMessage = message;
+})
 
 socket.on("players", (serverPlayers) => {
   players = serverPlayers;
@@ -165,12 +173,17 @@ function draw() {
   ctx.fillStyle = "#000000";
   ctx.font = `24px Verdana`;
   if (gameState === "PLAYING") {
-    const timeLeft = ((gameLength - (Date.now() - startTime)) / 1000).toFixed(
-      3
-    );
-    ctx.fillText(`time left ${timeLeft} seconds`, 50, 50);
+    ctx.fillText(`Time left: ${timeLeft}`, 50, 50);
   } else if (gameState === "WAITING_FOR_PLAYERS") {
-    ctx.fillText(`waiting for players`, 50, 50);
+    let msg = '';
+    if (wonMessage) msg += wonMessage + ' won! ';
+    msg += 'waiting for players';
+    ctx.fillText(msg, 50, 50);
+  } else if (gameState === "MIDGAME") {
+    let msg = '';
+    if (wonMessage) msg += wonMessage + ' won! ';
+    msg += `${waitingTime}s left.`;
+    ctx.fillText(msg, 50, 50);
   }
 }
 

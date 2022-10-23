@@ -24,11 +24,18 @@ import {
   emitPlayers,
   getControlsForPlayer,
   emitGameState,
-  emitGameTimes,
+  emitTimeLeft,
+  emitMidGameTime,
+  emitWonMessage,
 } from "./socketController";
+import { io } from "socket.io-client";
 
 export let players: TPlayer[] = [];
 const canJump: Record<string, boolean> = {};
+
+export const getTimeLeft = () => {
+  return timeLeft;
+}
 
 const ZOMBIE_SPAWN: TPoint = {
   x: 100,
@@ -43,10 +50,15 @@ const HUMAN_SPAWN: TPoint = {
 export enum GAME_STATE {
   WaitingForPlayers = "WAITING_FOR_PLAYERS",
   Playing = "PLAYING",
+  MidGame = "MIDGAME",
 }
 
+let timeLeft = 0;
 let gameStartTime = 0;
 let gameState: GAME_STATE = GAME_STATE.WaitingForPlayers;
+
+let waitingTime = 0;
+let won = '';
 
 export const removePlayer = (id: string) => {
   players = players.filter((player) => player.id !== id);
@@ -68,7 +80,7 @@ export function createPlayer(id: string) {
   return player;
 }
 
-const gotoWaitingState = () => {
+const gotoWaitingState = (winner: string) => {
   for (const player of players) {
     player.isZombie = false;
     player.color = "#FF00FF";
@@ -76,16 +88,42 @@ const gotoWaitingState = () => {
   gameState = GAME_STATE.WaitingForPlayers;
   respawnPlayers();
   emitGameState(gameState);
+  if (winner) {
+    won = winner;
+    emitWonMessage(winner);
+  }
 };
+
+const goToMidGameState = async (winner: string) => {
+  for (const player of players) {
+    player.isZombie = false;
+    player.color = "#FF00FF";
+  }
+  won = winner;
+  emitWonMessage(winner);
+  gameState = GAME_STATE.MidGame
+  respawnPlayers();
+  emitGameState(gameState);
+  waitingTime = 5;
+  emitMidGameTime(waitingTime);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  for (let i = 4; i > 0; i--) {
+    waitingTime = i;
+    emitMidGameTime(waitingTime);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  startGame();
+}
 
 const startGame = () => {
   gameState = GAME_STATE.Playing;
   gameStartTime = performance.now();
+  timeLeft = GAME_LENGTH / 1000;
+  emitTimeLeft(timeLeft);
   players.forEach(turnHuman);
   pickZombie();
   respawnPlayers();
   emitGameState(gameState);
-  emitGameTimes(Date.now(), GAME_LENGTH);
 };
 
 const turnHuman = (player) => {
@@ -114,6 +152,14 @@ const respawnPlayers = () => {
 
 export const getGameState = () => {
   return gameState;
+};
+
+export const getWhoWon = () => {
+  return won;
+};
+
+export const getWaitingTime = () => {
+  return waitingTime;
 };
 
 const pickZombie = () => {
@@ -177,11 +223,13 @@ function handleWaitingState() {
   }
 }
 
-function endGame() {
+function endGame(won: string) {
+  timeLeft = 0;
+  emitTimeLeft(timeLeft);
   if (players.length >= PLAYERS_NEEDED) {
-    startGame();
+    goToMidGameState(won)
   } else {
-    gotoWaitingState();
+    gotoWaitingState(won);
   }
 }
 
@@ -191,10 +239,11 @@ function handlePlayingState() {
 
   if (
     noMoreZombies ||
-    noMoreHumans ||
     performance.now() - gameStartTime >= GAME_LENGTH
   ) {
-    endGame();
+    endGame('Humans');
+  } else if (noMoreHumans) {
+    endGame('Zombies');
   }
 
   const zombies = players.filter((player) => player.isZombie);
@@ -212,6 +261,15 @@ function handlePlayingState() {
 }
 
 loadMap("default");
+
+const setTimeLeft = () => {
+  if (gameState == 'PLAYING') {
+    timeLeft = Math.ceil((GAME_LENGTH - (performance.now() - gameStartTime)) / 1000);
+    emitTimeLeft(timeLeft);
+  }
+}
+
+setInterval(setTimeLeft, 1000);
 
 let lastUpdate = Date.now();
 setInterval(() => {
