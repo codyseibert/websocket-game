@@ -1,3 +1,5 @@
+import { PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
+
 const { PLAYER_SIZE, TILE_SIZE } = require("./constants");
 
 type TRectangle = {
@@ -25,16 +27,23 @@ export const isOverlap = (rect1: TRectangle, rect2: TRectangle) => {
   }
 };
 
-const getBoundingBoxFactory = (STATIC_SIZE: number) => (entity) => {
+const getBoundingRectangleFactory = (width: number, height) => (entity) => {
   return {
-    width: STATIC_SIZE,
-    height: STATIC_SIZE,
+    width,
+    height,
     x: entity.x,
     y: entity.y,
   } as TRectangle;
 };
 
-export const getPlayerBoundingBox = getBoundingBoxFactory(PLAYER_SIZE);
+const getBoundingBoxFactory = (STATIC_SIZE: number) => (entity) => {
+  return getBoundingRectangleFactory(STATIC_SIZE, STATIC_SIZE)(entity);
+};
+
+export const getPlayerBoundingBox = getBoundingRectangleFactory(
+  PLAYER_WIDTH,
+  PLAYER_HEIGHT
+);
 export const getTileBoundingBox = getBoundingBoxFactory(TILE_SIZE);
 
 export const isCollidingWithMap = (player, collidables) => {

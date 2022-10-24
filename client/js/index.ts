@@ -1,5 +1,7 @@
 import { io } from "socket.io-client";
 import tilesheetUrl from "../images/tilesheet.png";
+import playerUrl from "../images/player.png";
+import zombieUrl from "../images/zombie.png";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -10,10 +12,12 @@ canvas.height = height;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 let lastRender = 0;
 ctx.fillStyle = "red";
+ctx.imageSmoothingEnabled = false;
 
 const TILE_SIZE = 128;
 const INTERPOLATION_SPEED = 0.05;
-const PLAYER_SIZE = 16;
+const PLAYER_WIDTH = 32;
+const PLAYER_HEIGHT = 48;
 
 let map = [[]];
 let gameMap: TGameMap | null = null;
@@ -42,6 +46,10 @@ let waitingTime = 0;
 
 let wonMessage = "";
 
+const playerImage = new Image();
+playerImage.src = playerUrl;
+const zombieImage = new Image();
+zombieImage.src = zombieUrl;
 const mapImage = new Image();
 
 socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
@@ -143,8 +151,8 @@ function draw() {
           y,
           TILE_SIZE,
           TILE_SIZE,
-          col * TILE_SIZE - cx,
-          row * TILE_SIZE - cy,
+          Math.floor(col * TILE_SIZE - cx),
+          Math.floor(row * TILE_SIZE - cy),
           TILE_SIZE,
           TILE_SIZE
         );
@@ -153,16 +161,33 @@ function draw() {
   }
 
   for (let player of players) {
-    const { x: px, y: py } = interpolations[player.id];
+    let { x: px, y: py } = interpolations[player.id];
 
-    if (player.id === socket.id) {
-      ctx.fillStyle = "#ff0000";
-      ctx.fillRect(px - 1 - cx, py - 1 - cy, PLAYER_SIZE + 2, PLAYER_SIZE + 2);
+    if (player.isZombie) {
+      ctx.drawImage(
+        zombieImage,
+        0,
+        0,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT,
+        px - cx,
+        py - cy,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+      );
+    } else {
+      ctx.drawImage(
+        playerImage,
+        0,
+        0,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT,
+        px - cx,
+        py - cy,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+      );
     }
-
-    ctx.fillStyle = player.color;
-    ctx.fillRect(px - cx, py - cy, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.fillStyle = "#000000";
     ctx.font = `16px Verdana`;
     ctx.fillText(player.name, px - 10 - cx, py - 10 - cy);
   }

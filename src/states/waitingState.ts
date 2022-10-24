@@ -5,7 +5,7 @@ import {
   setGameState,
   Teams,
 } from "../gameController";
-import { emitGameState, emitWonMessage } from "../socketController";
+import { emitWonMessage } from "../socketController";
 import { startGame } from "./playingState";
 
 export function handleWaitingState(players) {

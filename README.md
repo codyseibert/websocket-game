@@ -9,3 +9,7 @@
 
 - npm start
 - open http://localhost:3000
+
+## Attribution
+
+player sprites: https://davidjakubec.itch.io/characters-sprite-sheet?download

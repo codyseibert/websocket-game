@@ -15,22 +15,26 @@ import { emitTimeLeft } from "../socketController";
 import { goToMidGameState } from "./midGameState";
 import { gotoWaitingState } from "./waitingState";
 
-let gameStartTime;
 let timeLeft;
 let timeLeftInterval;
 
 export const startGame = (players: TPlayer[]) => {
-  setGameState(GAME_STATE.Playing);
-  gameStartTime = performance.now();
   timeLeft = GAME_LENGTH / 1000;
   emitTimeLeft(timeLeft);
   players.forEach(turnHuman);
   pickZombie(players);
   respawnPlayers();
+  setGameState(GAME_STATE.Playing);
+
+  const setTimeLeft = () => {
+    timeLeft--;
+    emitTimeLeft(timeLeft);
+  };
+
   timeLeftInterval = setInterval(setTimeLeft, 1000);
 };
 
-const turnHuman = (player) => {
+export const turnHuman = (player) => {
   player.color = HUMAN_COLOR;
   player.isZombie = false;
 };
@@ -45,11 +49,11 @@ const pickZombie = (players) => {
   turnZombie(zombie);
 };
 
-export function handlePlayingState(players, gameStartTime) {
+export function handlePlayingState(players) {
   const noMoreZombies = players.every((player) => !player.isZombie);
   const noMoreHumans = players.every((player) => player.isZombie);
 
-  if (noMoreZombies || performance.now() - gameStartTime >= GAME_LENGTH) {
+  if (noMoreZombies || timeLeft <= 0) {
     endGame(Teams.Humans, players);
   } else if (noMoreHumans) {
     endGame(Teams.Zombies, players);
@@ -78,10 +82,3 @@ export function endGame(won: Teams, players) {
     gotoWaitingState(won, players);
   }
 }
-
-const setTimeLeft = () => {
-  timeLeft = Math.ceil(
-    (GAME_LENGTH - (performance.now() - gameStartTime)) / 1000
-  );
-  emitTimeLeft(timeLeft);
-};
