@@ -4,6 +4,8 @@
     "files": true
   },
   "files": ["src/index.ts", "globals.d.ts"],
+  "include": ["**/*.ts"],
+  "exclude": [".git", "node_modules"],
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",

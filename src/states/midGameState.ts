@@ -1,3 +1,4 @@
+import { MID_GAME_LENGTH } from "../constants";
 import {
   GAME_STATE,
   respawnPlayers,
@@ -5,20 +6,30 @@ import {
   Teams,
 } from "../gameController";
 import { emitMidGameTime, emitWonMessage } from "../socketController";
-import { startGame } from "./playingState";
+import { startGame, turnHuman } from "./playingState";
+
+const turnPurpleHuman = (player) => {
+  turnHuman(player);
+  player.color = "#FF00FF";
+};
 
 export const goToMidGameState = async (winner: Teams, players) => {
   emitWonMessage(winner);
   setGameState(GAME_STATE.MidGame);
+  players.forEach(turnPurpleHuman);
+  respawnPlayers();
 
-  let waitingTime = 5;
-  emitMidGameTime(waitingTime);
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  for (let i = 4; i > 0; i--) {
-    waitingTime = i;
-    emitMidGameTime(waitingTime);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
+  let timeLeft = MID_GAME_LENGTH / 1000;
+  emitMidGameTime(timeLeft);
+  const midGameInterval = setInterval(() => {
+    timeLeft--;
+    emitMidGameTime(timeLeft);
 
-  startGame(players);
+    if (timeLeft <= 0) {
+      clearInterval(midGameInterval);
+      startGame(players);
+    }
+  }, 1000);
 };
+
+export const handleMidGameState = () => {};

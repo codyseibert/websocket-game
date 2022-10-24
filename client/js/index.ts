@@ -1,8 +1,10 @@
 import { io } from "socket.io-client";
-import { GAME_STATE } from "../../src/gameController";
 import tilesheetUrl from "../images/tilesheet.png";
+import playerUrl from "../images/player.png";
+import zombieUrl from "../images/zombie.png";
+import bgUrl from "../images/bg.png";
 
-const socket = io("ws://localhost:3000");
+const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -11,10 +13,12 @@ canvas.height = height;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 let lastRender = 0;
 ctx.fillStyle = "red";
+ctx.imageSmoothingEnabled = false;
 
 const TILE_SIZE = 128;
 const INTERPOLATION_SPEED = 0.05;
-const PLAYER_SIZE = 16;
+const PLAYER_WIDTH = 32;
+const PLAYER_HEIGHT = 48;
 
 let map = [[]];
 let gameMap: TGameMap | null = null;
@@ -41,8 +45,14 @@ let gameState;
 let timeLeft = 0;
 let waitingTime = 0;
 
-let wonMessage = '';
+let wonMessage = "";
 
+const bgImage = new Image();
+bgImage.src = bgUrl;
+const playerImage = new Image();
+playerImage.src = playerUrl;
+const zombieImage = new Image();
+zombieImage.src = zombieUrl;
 const mapImage = new Image();
 
 socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
@@ -56,18 +66,16 @@ socket.on("gameState", (serverGameState) => {
 });
 
 socket.on("timeLeft", (time) => {
-    timeLeft = time;
-  }
-);
+  timeLeft = time;
+});
 
 socket.on("waitingTime", (time) => {
   waitingTime = time;
-}
-);
+});
 
 socket.on("wonMessage", (message: string) => {
   wonMessage = message;
-})
+});
 
 socket.on("players", (serverPlayers) => {
   players = serverPlayers;
@@ -133,6 +141,19 @@ function draw() {
     cy = interpolations[playerToFocus.id].y - canvas.height / 2;
   }
 
+  // background
+  ctx.drawImage(
+    bgImage,
+    0,
+    0,
+    bgImage.width,
+    bgImage.height,
+    0 - cx / 20 - 50,
+    0 - cy / 20 - 50,
+    bgImage.width,
+    bgImage.height
+  );
+
   ctx.fillStyle = "#000000";
   for (let row = 0; row < map.length; row++) {
     for (let col = 0; col < map[row].length; col++) {
@@ -146,8 +167,8 @@ function draw() {
           y,
           TILE_SIZE,
           TILE_SIZE,
-          col * TILE_SIZE - cx,
-          row * TILE_SIZE - cy,
+          Math.floor(col * TILE_SIZE - cx),
+          Math.floor(row * TILE_SIZE - cy),
           TILE_SIZE,
           TILE_SIZE
         );
@@ -156,32 +177,52 @@ function draw() {
   }
 
   for (let player of players) {
-    const { x: px, y: py } = interpolations[player.id];
+    let { x: px, y: py } = interpolations[player.id];
 
-    if (player.id === socket.id) {
-      ctx.fillStyle = "#ff0000";
-      ctx.fillRect(px - 1 - cx, py - 1 - cy, PLAYER_SIZE + 2, PLAYER_SIZE + 2);
+    if (player.isZombie) {
+      ctx.drawImage(
+        zombieImage,
+        0,
+        0,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT,
+        px - cx,
+        py - cy,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+      );
+    } else {
+      ctx.drawImage(
+        playerImage,
+        0,
+        0,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT,
+        px - cx,
+        py - cy,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+      );
     }
 
-    ctx.fillStyle = player.color;
-    ctx.fillRect(px - cx, py - cy, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.fillStyle = "#000000";
+    // ctx.fillRect(px - cx, py - cy, PLAYER_WIDTH, PLAYER_HEIGHT);
+    ctx.fillStyle = player.isZombie ? "#00FF00" : "#0000ff";
     ctx.font = `16px Verdana`;
     ctx.fillText(player.name, px - 10 - cx, py - 10 - cy);
   }
 
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#FFFFFF";
   ctx.font = `24px Verdana`;
   if (gameState === "PLAYING") {
     ctx.fillText(`Time left: ${timeLeft}`, 50, 50);
   } else if (gameState === "WAITING_FOR_PLAYERS") {
-    let msg = '';
-    if (wonMessage) msg += wonMessage + ' won! ';
-    msg += 'waiting for players';
+    let msg = "";
+    if (wonMessage) msg += wonMessage + " won! ";
+    msg += "waiting for players";
     ctx.fillText(msg, 50, 50);
   } else if (gameState === "MIDGAME") {
-    let msg = '';
-    if (wonMessage) msg += wonMessage + ' won! ';
+    let msg = "";
+    if (wonMessage) msg += wonMessage + " won! ";
     msg += `${waitingTime}s left.`;
     ctx.fillText(msg, 50, 50);
   }

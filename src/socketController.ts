@@ -3,7 +3,6 @@ import {
   GAME_STATE,
   getGameState,
   removePlayer,
-  getTimeLeft,
   getWaitingTime,
   getWhoWon,
 } from "./gameController";
@@ -64,7 +63,7 @@ export const startSocketController = (server) => {
 
     socket.emit("map", { map: getMap(), gameMap: getGameMap() });
     socket.emit("gameState", getGameState());
-    socket.emit("timeLeft", getTimeLeft());
+    // socket.emit("timeLeft", getTimeLeft());
     if (getGameState() === GAME_STATE.MidGame) {
       socket.emit("waitingTime", getWaitingTime());
     }

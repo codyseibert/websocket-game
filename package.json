@@ -2,10 +2,12 @@
   "name": "websocket-game",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "default": "client/index.html",
   "scripts": {
     "dev:client": "parcel client/index.html",
-    "dev:server": "nodemon src/index.ts"
+    "dev:server": "nodemon src/index.ts",
+    "build": "WS_SERVER='' parcel build client/index.html",
+    "start": "NODE_ENV=production ts-node src/index.ts"
   },
   "repository": {
     "type": "git",
