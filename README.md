@@ -1,1 +1,11 @@
-coin sound found from https://freesound.org/people/ProjectsU012/sounds/341695/
+## How to Run Locally
+
+- npm i
+- npm run dev:client
+- npm run dev:server
+- open http://localhost:1234
+
+## How to Run Production Build
+
+- npm start
+- open http://localhost:3000

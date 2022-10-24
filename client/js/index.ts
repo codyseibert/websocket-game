@@ -1,8 +1,7 @@
 import { io } from "socket.io-client";
-import { GAME_STATE } from "../../src/gameController";
 import tilesheetUrl from "../images/tilesheet.png";
 
-const socket = io("ws://localhost:3000");
+const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -41,7 +40,7 @@ let gameState;
 let timeLeft = 0;
 let waitingTime = 0;
 
-let wonMessage = '';
+let wonMessage = "";
 
 const mapImage = new Image();
 
@@ -56,18 +55,16 @@ socket.on("gameState", (serverGameState) => {
 });
 
 socket.on("timeLeft", (time) => {
-    timeLeft = time;
-  }
-);
+  timeLeft = time;
+});
 
 socket.on("waitingTime", (time) => {
   waitingTime = time;
-}
-);
+});
 
 socket.on("wonMessage", (message: string) => {
   wonMessage = message;
-})
+});
 
 socket.on("players", (serverPlayers) => {
   players = serverPlayers;
@@ -175,13 +172,13 @@ function draw() {
   if (gameState === "PLAYING") {
     ctx.fillText(`Time left: ${timeLeft}`, 50, 50);
   } else if (gameState === "WAITING_FOR_PLAYERS") {
-    let msg = '';
-    if (wonMessage) msg += wonMessage + ' won! ';
-    msg += 'waiting for players';
+    let msg = "";
+    if (wonMessage) msg += wonMessage + " won! ";
+    msg += "waiting for players";
     ctx.fillText(msg, 50, 50);
   } else if (gameState === "MIDGAME") {
-    let msg = '';
-    if (wonMessage) msg += wonMessage + ' won! ';
+    let msg = "";
+    if (wonMessage) msg += wonMessage + " won! ";
     msg += `${waitingTime}s left.`;
     ctx.fillText(msg, 50, 50);
   }

@@ -24,7 +24,6 @@ export const startGame = (players: TPlayer[]) => {
   gameStartTime = performance.now();
   timeLeft = GAME_LENGTH / 1000;
   emitTimeLeft(timeLeft);
-  console.log("start game");
   players.forEach(turnHuman);
   pickZombie(players);
   respawnPlayers();
