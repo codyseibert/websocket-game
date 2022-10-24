@@ -14,10 +14,11 @@ import { getPlayerBoundingBox, isOverlap } from "../geom";
 import { emitTimeLeft } from "../socketController";
 import { goToMidGameState } from "./midGameState";
 import { gotoWaitingState } from "./waitingState";
+import { performance }  from 'perf_hooks';
 
-let gameStartTime;
-let timeLeft;
-let timeLeftInterval;
+let gameStartTime: number;
+let timeLeft: number;
+let timeLeftInterval: NodeJS.Timeout;
 
 export const startGame = (players: TPlayer[]) => {
   setGameState(GAME_STATE.Playing);

@@ -1,4 +1,4 @@
-const { PLAYER_SIZE, TILE_SIZE } = require("./constants");
+import  { PLAYER_SIZE, TILE_SIZE } from "./constants";
 
 type TRectangle = {
   x: number;
