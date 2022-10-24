@@ -1,24 +1,26 @@
-export const PORT = process.env.PORT || 3000;
-export const GRAVITY = 0.0428;
-export const TICK_RATE = 30;
-export const TILE_SIZE = 128;
-export const COIN_SIZE = 6;
-export const PLAYER_SPEED = 0.3;
-export const END_GAME_SCORE = 10;
-export const COIN_SPAWN_RATE = 500;
-export const GAME_LENGTH = 30000;
-export const MID_GAME_LENGTH = 5000;
-export const PLAYERS_NEEDED = 2;
-export const HUMAN_COLOR = "#FF0000";
-export const ZOMBIE_COLOR = "#00FF00";
-export const PLAYER_WIDTH = 32;
-export const PLAYER_HEIGHT = 48;
-export const LIMIT_IP = process.env.NODE_ENV === "production" ? true : false;
-export const CONTROLS = {
-  UP: "up",
-  DOWN: "down",
-  LEFT: "left",
-  RIGHT: "right",
-  JUMP: "jump",
-};
-export const JUMP_SPEED = -28;
+export const PORT: string | number = process.env.PORT || 3000;
+export const GRAVITY: number = 0.0428;
+export const TICK_RATE: number = 30;
+export const TILE_SIZE: number = 128;
+export const COIN_SIZE: number = 6;
+export const PLAYER_SPEED: number = 0.3;
+export const END_GAME_SCORE: number = 10;
+export const COIN_SPAWN_RATE: number = 500;
+export const GAME_LENGTH: number = 30000;
+export const PLAYERS_NEEDED: number = 2;
+export const MID_GAME_LENGTH: number = 5000;
+export const HUMAN_COLOR: string = "#FF0000";
+export const ZOMBIE_COLOR: string = "#00FF00";
+export const PLAYER_WIDTH: number = 32;
+export const PLAYER_HEIGHT: number = 48;
+export const LIMIT_IP: boolean =
+  process.env.NODE_ENV === "production" ? true : false;
+export const JUMP_SPEED: number = -28;
+
+export enum CONTROLS {
+  UP = "up",
+  DOWN = "down",
+  LEFT = "left",
+  RIGHT = "right",
+  JUMP = "jump",
+}
