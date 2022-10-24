@@ -2,6 +2,7 @@ import { io } from "socket.io-client";
 import tilesheetUrl from "../images/tilesheet.png";
 import playerUrl from "../images/player.png";
 import zombieUrl from "../images/zombie.png";
+import bgUrl from "../images/bg.png";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -46,6 +47,8 @@ let waitingTime = 0;
 
 let wonMessage = "";
 
+const bgImage = new Image();
+bgImage.src = bgUrl;
 const playerImage = new Image();
 playerImage.src = playerUrl;
 const zombieImage = new Image();
@@ -138,6 +141,19 @@ function draw() {
     cy = interpolations[playerToFocus.id].y - canvas.height / 2;
   }
 
+  // background
+  ctx.drawImage(
+    bgImage,
+    0,
+    0,
+    bgImage.width,
+    bgImage.height,
+    0 - cx / 20 - 50,
+    0 - cy / 20 - 50,
+    bgImage.width,
+    bgImage.height
+  );
+
   ctx.fillStyle = "#000000";
   for (let row = 0; row < map.length; row++) {
     for (let col = 0; col < map[row].length; col++) {
@@ -188,11 +204,14 @@ function draw() {
         PLAYER_HEIGHT
       );
     }
+
+    // ctx.fillRect(px - cx, py - cy, PLAYER_WIDTH, PLAYER_HEIGHT);
+    ctx.fillStyle = player.isZombie ? "#00FF00" : "#0000ff";
     ctx.font = `16px Verdana`;
     ctx.fillText(player.name, px - 10 - cx, py - 10 - cy);
   }
 
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#FFFFFF";
   ctx.font = `24px Verdana`;
   if (gameState === "PLAYING") {
     ctx.fillText(`Time left: ${timeLeft}`, 50, 50);

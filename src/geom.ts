@@ -27,14 +27,15 @@ export const isOverlap = (rect1: TRectangle, rect2: TRectangle) => {
   }
 };
 
-const getBoundingRectangleFactory = (width: number, height) => (entity) => {
-  return {
-    width,
-    height,
-    x: entity.x,
-    y: entity.y,
-  } as TRectangle;
-};
+const getBoundingRectangleFactory =
+  (width: number, height: number) => (entity) => {
+    return {
+      width,
+      height,
+      x: entity.x,
+      y: entity.y,
+    } as TRectangle;
+  };
 
 const getBoundingBoxFactory = (STATIC_SIZE: number) => (entity) => {
   return getBoundingRectangleFactory(STATIC_SIZE, STATIC_SIZE)(entity);
