@@ -1,9 +1,10 @@
 {
-  "include": ["./types/**/*", "./src/**/*"],
+  "include": ["**/*.ts"],
+  "exclude": [".git", "node_modules"],
   "ts-node": {
     "files": true
   },
-  "files": ["src/index.ts", "types/global.d.ts"],
+  "files": ["./src/index.ts", "./types/globals.d.ts"],
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
