@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
 import tilesheetUrl from "../images/tilesheet.png";
+import decalsUrl from "../images/decals.png";
 import playerRUrl from "../images/playerR.png";
 import zombieRUrl from "../images/zombieR.png";
 import playerLUrl from "../images/playerL.png";
@@ -21,8 +22,7 @@ const INTERPOLATION_SPEED = 0.05;
 const PLAYER_WIDTH = 32;
 const PLAYER_HEIGHT = 48;
 
-let map = [[]];
-let gameMap: TGameMap | null = null;
+let map: TGameMap | null = null;
 let players: TPlayer[] = [];
 const interpolations = {};
 
@@ -59,11 +59,12 @@ playerImageL.src = playerLUrl;
 const zombieImageL = new Image();
 zombieImageL.src = zombieLUrl;
 const mapImage = new Image();
+mapImage.src = tilesheetUrl;
+const decalImage = new Image();
+decalImage.src = decalsUrl;
 
-socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
+socket.on("map", (serverMap: TGameMap) => {
   map = serverMap;
-  gameMap = serverGameMap;
-  mapImage.src = tilesheetUrl;
 });
 
 socket.on("gameState", (serverGameState) => {
@@ -123,9 +124,9 @@ function update(delta: number) {
   }
 }
 
-function getTileImageLocation(id: number) {
-  if (!gameMap || !gameMap.tileset) return { x: 0, y: 0 };
-  const cols = gameMap.tileset.width / TILE_SIZE;
+function getTileImageLocation(id: number, metadata: any) {
+  if (!map) return { x: 0, y: 0 };
+  const cols = metadata.width / TILE_SIZE;
   const x = ((id - 1) % cols) * TILE_SIZE;
   const y = Math.floor((id - 1) / cols) * TILE_SIZE;
   return {
@@ -160,23 +161,47 @@ function draw() {
   );
 
   ctx.fillStyle = "#000000";
-  for (let row = 0; row < map.length; row++) {
-    for (let col = 0; col < map[row].length; col++) {
-      const tileType = map[row][col];
 
-      if (tileType !== 0) {
-        const { x, y } = getTileImageLocation(tileType);
-        ctx.drawImage(
-          mapImage,
-          x,
-          y,
-          TILE_SIZE,
-          TILE_SIZE,
-          Math.floor(col * TILE_SIZE - cx),
-          Math.floor(row * TILE_SIZE - cy),
-          TILE_SIZE,
-          TILE_SIZE
-        );
+  if (map) {
+    for (let row = 0; row < map.grid.tiles.length; row++) {
+      for (let col = 0; col < map.grid.tiles[row].length; col++) {
+        const tileType = map.grid.tiles[row][col];
+
+        if (tileType !== 0) {
+          const { x, y } = getTileImageLocation(tileType, map.grid.metadata);
+          ctx.drawImage(
+            mapImage,
+            x,
+            y,
+            TILE_SIZE,
+            TILE_SIZE,
+            Math.floor(col * TILE_SIZE - cx),
+            Math.floor(row * TILE_SIZE - cy),
+            TILE_SIZE,
+            TILE_SIZE
+          );
+        }
+      }
+    }
+
+    for (let row = 0; row < map.decals.tiles.length; row++) {
+      for (let col = 0; col < map.decals.tiles[row].length; col++) {
+        const tileType = map.decals.tiles[row][col];
+
+        if (tileType !== 0) {
+          const { x, y } = getTileImageLocation(tileType, map.decals.metadata);
+          ctx.drawImage(
+            decalImage,
+            x,
+            y,
+            TILE_SIZE,
+            TILE_SIZE,
+            Math.floor(col * TILE_SIZE - cx),
+            Math.floor(row * TILE_SIZE - cy),
+            TILE_SIZE,
+            TILE_SIZE
+          );
+        }
       }
     }
   }

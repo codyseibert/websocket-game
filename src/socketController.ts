@@ -6,7 +6,7 @@ import {
   getWaitingTime,
   getWhoWon,
 } from "./gameController";
-import { getMap, getGameMap } from "./mapController";
+import { getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
 import { LIMIT_IP, GAME_LENGTH } from "./constants";
 
@@ -61,7 +61,7 @@ export const startSocketController = (server) => {
     }
     ipSet.add(ipAddress);
 
-    socket.emit("map", { map: getMap(), gameMap: getGameMap() });
+    socket.emit("map", getGameMap());
     socket.emit("gameState", getGameState());
     // socket.emit("timeLeft", getTimeLeft());
     if (getGameState() === GAME_STATE.MidGame) {

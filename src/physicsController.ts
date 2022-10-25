@@ -6,7 +6,7 @@ import {
   TILE_SIZE,
 } from "./constants";
 import { isCollidingWithMap } from "./geom";
-import { getCollidables, getMap } from "./mapController";
+import { getCollidables, getGameMap } from "./mapController";
 import { getControlsForPlayer } from "./socketController";
 
 const canJump: Record<string, boolean> = {};
@@ -46,7 +46,7 @@ export const handleGamePhysics = (players: TPlayer[], delta: number) => {
       player.vy = JUMP_SPEED;
     }
 
-    if (player.y > getMap().length * TILE_SIZE * 2) {
+    if (player.y > getGameMap().grid.tiles.length * TILE_SIZE * 2) {
       player.x = 100;
       player.y = 100;
       player.vy = 0;

@@ -3,9 +3,52 @@ import { TPoint } from "./geom";
 const tmx = require("tmx-parser");
 const { TILE_SIZE } = require("./constants");
 
-let map: number[][] = [[]];
-let gameMap = {};
+let gameMap: TGameMap;
 let collidables: any[] = [];
+
+type TMXTileSet = {
+  firstGid: number;
+  source: string;
+  name: string;
+  tileWidth: number;
+  tileHeight: number;
+  spacing: any;
+  margin: any;
+  tileOffset: any[];
+  properties: {};
+  image: {
+    width: number;
+    height: number;
+  };
+  tiles: any[];
+  terrainTypes: any[];
+};
+
+type TMXLayer = {
+  map: any[];
+  type: string;
+  name: string;
+  opacity: number;
+  visible: boolean;
+  properties: any;
+  tiles: any[];
+  horizontalFlips: any[];
+  verticalFlips: any[];
+  diagonalFlips: any[];
+};
+
+type TMXMap = {
+  version: string;
+  orientation: string;
+  width: number;
+  height: number;
+  tileWidth: number;
+  tileHeight: number;
+  backgroundColor: string;
+  layers: TMXLayer[];
+  properties: any;
+  tileSets: TMXTileSet[];
+};
 
 const maps = {
   default: "./maps/platforms.tmx",
@@ -23,39 +66,58 @@ const loadTmxMap = (filename: string): any => {
 export const loadMap = async (mapName) => {
   const mapPath = maps[mapName];
 
-  const tmxMap = await loadTmxMap(mapPath);
-  const tiles = tmxMap.layers[0].tiles;
+  const tmxMap: TMXMap = await loadTmxMap(mapPath);
 
   const grid: any[] = [];
+  const gridTiles = tmxMap.layers[0].tiles;
+  console.log(tmxMap.tileSets[0].firstGid);
   for (let i = 0; i < tmxMap.height; i++) {
     const arr: any[] = [];
     for (let j = 0; j < tmxMap.width; j++) {
-      const tile = tiles[i * tmxMap.width + j];
-      arr.push(tile?.gid ?? 0);
+      const tile = gridTiles[i * tmxMap.width + j];
+      arr.push(tile?.gid ? tile.gid - tmxMap.tileSets[0].firstGid + 1 : 0);
     }
     grid.push(arr);
   }
 
-  const firstTileSet = tmxMap.tileSets[0];
+  const decals: any[] = [];
+  const tmxDecals = tmxMap.layers[1].tiles;
+  for (let i = 0; i < tmxMap.height; i++) {
+    const arr: any[] = [];
+    for (let j = 0; j < tmxMap.width; j++) {
+      const tile = tmxDecals[i * tmxMap.width + j];
+      arr.push(tile?.gid ? tile.gid - tmxMap.tileSets[1].firstGid + 1 : 0);
+    }
+    decals.push(arr);
+  }
 
   const newMap: TGameMap = {
-    grid,
-    tileset: {
-      image: firstTileSet.image.source.replace("..", ""),
-      width: firstTileSet.image.width,
-      height: firstTileSet.image.height,
-      tileWidth: firstTileSet.tileWidth,
-      tileHeight: firstTileSet.tileHeight,
+    grid: {
+      tiles: grid,
+      metadata: {
+        width: tmxMap.tileSets[0].image.width,
+        height: tmxMap.tileSets[0].image.height,
+        tileWidth: tmxMap.tileSets[0].tileWidth,
+        tileHeight: tmxMap.tileSets[0].tileHeight,
+      },
+    },
+    decals: {
+      tiles: decals,
+      metadata: {
+        width: tmxMap.tileSets[1].image.width,
+        height: tmxMap.tileSets[1].image.height,
+        tileWidth: tmxMap.tileSets[1].tileWidth,
+        tileHeight: tmxMap.tileSets[1].tileHeight,
+      },
     },
   };
 
-  map = newMap.grid;
   gameMap = newMap;
 
   collidables = [];
-  for (let row = 0; row < map.length; row++) {
-    for (let col = 0; col < map[row].length; col++) {
-      if (map[row][col] !== 0) {
+  for (let row = 0; row < newMap.grid.tiles.length; row++) {
+    for (let col = 0; col < newMap.grid.tiles[row].length; col++) {
+      if (newMap.grid.tiles[row][col] !== 0) {
         collidables.push({
           y: row * TILE_SIZE,
           x: col * TILE_SIZE,
@@ -81,4 +143,3 @@ export const getHumanSpawn = () => HUMAN_SPAWN;
 export const getCollidables = () => collidables;
 
 export const getGameMap = () => gameMap;
-export const getMap = () => map;

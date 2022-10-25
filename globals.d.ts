@@ -14,12 +14,22 @@ type TPlayer = {
 };
 
 type TGameMap = {
-  grid: number[][];
-  tileset: {
-    image: string;
-    width: number;
-    height: number;
-    tileWidth: number;
-    tileHeight: number;
+  grid: {
+    tiles: number[][];
+    metadata: {
+      width: number;
+      height: number;
+      tileWidth: number;
+      tileHeight: number;
+    };
+  };
+  decals: {
+    tiles: number[][];
+    metadata: {
+      width: number;
+      height: number;
+      tileWidth: number;
+      tileHeight: number;
+    };
   };
 };

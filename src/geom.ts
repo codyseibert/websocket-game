@@ -1,4 +1,4 @@
-import  { TILE_SIZE, PLAYER_HEIGHT, PLAYER_WIDTH  } from "./constants";
+import { TILE_SIZE, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 
 type TRectangle = {
   x: number;
@@ -13,16 +13,12 @@ export type TPoint = {
 };
 
 export const isOverlap = (rect1: TRectangle, rect2: TRectangle) => {
-  if (
+  return (
     rect1.x < rect2.x + rect2.width &&
     rect1.x + rect1.width > rect2.x &&
     rect1.y < rect2.y + rect2.height &&
     rect1.height + rect1.y > rect2.y
-  ) {
-    return true;
-  } else {
-    return false;
-  }
+  );
 };
 
 const getBoundingRectangleFactory =
