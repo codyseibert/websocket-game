@@ -10,6 +10,7 @@ type TPlayer = {
   color: string;
   name: string;
   isZombie: boolean;
+  facingRight: boolean;
 };
 
 type TGameMap = {

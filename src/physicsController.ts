@@ -17,12 +17,14 @@ export const handleGamePhysics = (players: TPlayer[], delta: number) => {
 
     if (playerControls[CONTROLS.RIGHT]) {
       player.x += PLAYER_SPEED * delta;
+      player.facingRight = true;
 
       if (isCollidingWithMap(player, getCollidables())) {
         player.x -= PLAYER_SPEED * delta;
       }
     } else if (playerControls[CONTROLS.LEFT]) {
       player.x -= PLAYER_SPEED * delta;
+      player.facingRight = false;
 
       if (isCollidingWithMap(player, getCollidables())) {
         player.x += PLAYER_SPEED * delta;

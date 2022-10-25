@@ -1,7 +1,9 @@
 import { io } from "socket.io-client";
 import tilesheetUrl from "../images/tilesheet.png";
-import playerUrl from "../images/player.png";
-import zombieUrl from "../images/zombie.png";
+import playerRUrl from "../images/playerR.png";
+import zombieRUrl from "../images/zombieR.png";
+import playerLUrl from "../images/playerL.png";
+import zombieLUrl from "../images/zombieL.png";
 import bgUrl from "../images/bg.png";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
@@ -49,10 +51,14 @@ let wonMessage = "";
 
 const bgImage = new Image();
 bgImage.src = bgUrl;
-const playerImage = new Image();
-playerImage.src = playerUrl;
-const zombieImage = new Image();
-zombieImage.src = zombieUrl;
+const playerImageR = new Image();
+playerImageR.src = playerRUrl;
+const zombieImageR = new Image();
+zombieImageR.src = zombieRUrl;
+const playerImageL = new Image();
+playerImageL.src = playerLUrl;
+const zombieImageL = new Image();
+zombieImageL.src = zombieLUrl;
 const mapImage = new Image();
 
 socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
@@ -181,7 +187,7 @@ function draw() {
 
     if (player.isZombie) {
       ctx.drawImage(
-        zombieImage,
+        player.facingRight ? zombieImageR : zombieImageL,
         0,
         0,
         PLAYER_WIDTH,
@@ -193,7 +199,7 @@ function draw() {
       );
     } else {
       ctx.drawImage(
-        playerImage,
+        player.facingRight ? playerImageR : playerImageL,
         0,
         0,
         PLAYER_WIDTH,
