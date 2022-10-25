@@ -41,6 +41,8 @@ export function createPlayer(id: string) {
     id,
     color: `#${Math.floor(Math.random() * (0xffffff + 1)).toString(16)}`,
     facingRight: true,
+    health: 3,
+    lastHit: 0,
   };
   players.push(player);
   return player;

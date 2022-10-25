@@ -2,8 +2,12 @@ import { io } from "socket.io-client";
 import tilesheetUrl from "../images/tilesheet.png";
 import decalsUrl from "../images/decals.png";
 import playerRUrl from "../images/playerR.png";
-import zombieRUrl from "../images/zombieR.png";
 import playerLUrl from "../images/playerL.png";
+import playerR_2Url from "../images/playerR_2.png";
+import playerL_2Url from "../images/playerL_2.png";
+import playerR_1Url from "../images/playerR_1.png";
+import playerL_1Url from "../images/playerL_1.png";
+import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
 import bgUrl from "../images/bg.png";
 import { PING_REQUEST_INTERVAL } from "../../src/constants";
@@ -37,10 +41,18 @@ const bgImage = new Image();
 bgImage.src = bgUrl;
 const playerImageR = new Image();
 playerImageR.src = playerRUrl;
-const zombieImageR = new Image();
-zombieImageR.src = zombieRUrl;
 const playerImageL = new Image();
 playerImageL.src = playerLUrl;
+const playerImageR_2 = new Image();
+playerImageR_2.src = playerR_2Url;
+const playerImageL_2 = new Image();
+playerImageL_2.src = playerL_2Url;
+const playerImageR_1 = new Image();
+playerImageR_1.src = playerR_1Url;
+const playerImageL_1 = new Image();
+playerImageL_1.src = playerL_1Url;
+const zombieImageR = new Image();
+zombieImageR.src = zombieRUrl;
 const zombieImageL = new Image();
 zombieImageL.src = zombieLUrl;
 const mapImage = new Image();
@@ -93,15 +105,15 @@ socket.on("ping", (ping: number) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  controls[keyMap[e.key]] = true;
+  activeControls[defaultKeymap[e.key]] = true;
 });
 
 document.addEventListener("keyup", (e) => {
-  controls[keyMap[e.key]] = false;
+  activeControls[defaultKeymap[e.key]] = false;
 });
 
 function update(delta: number) {
-  socket.emit("controls", controls);
+  socket.emit("controls", activeControls);
   
   if (pingDelay >= PING_REQUEST_INTERVAL) {
     socket.emit("requestPingTime", Date.now());
@@ -237,7 +249,17 @@ function draw() {
     if (player.isZombie) {
       drawPlayer(player, zombieImageL, zombieImageR, px, py);
     } else {
-      drawPlayer(player, playerImageL, playerImageR, px, py);
+      switch (player.health) {
+        case 3:
+          drawPlayer(player, playerImageL, playerImageR, px, py);
+          break;
+        case 2:
+          drawPlayer(player, playerImageL_2, playerImageR_2, px, py);
+          break;
+        case 1:
+          drawPlayer(player, playerImageL_1, playerImageR_1, px, py);
+          break;
+      }
     }
 
     // ctx.fillRect(px - cx, py - cy, PLAYER_WIDTH, PLAYER_HEIGHT);
