@@ -6,6 +6,7 @@ import zombieRUrl from "../images/zombieR.png";
 import playerLUrl from "../images/playerL.png";
 import zombieLUrl from "../images/zombieL.png";
 import bgUrl from "../images/bg.png";
+import { PING_REQUEST_INTERVAL } from "../../src/constants";
 import {INTERPOLATION_SPEED, PLAYER_HEIGHT, PLAYER_WIDTH, TILE_SIZE} from "./constants";
 import {ctx, setupCanvas} from "./canvas";
 import {activeControls, defaultKeymap, setKeymap} from "./controls";
@@ -27,6 +28,8 @@ const interpolations = {};
 let gameState;
 let timeLeft = 0;
 let waitingTime = 0;
+let pingTimeMS = -1;
+let pingDelay = 0;
 
 let wonMessage = "";
 
@@ -85,8 +88,25 @@ socket.on("players", (serverPlayers) => {
   }
 });
 
+socket.on("ping", (ping: number) => {
+  pingTimeMS = ping;
+});
+
+document.addEventListener("keydown", (e) => {
+  controls[keyMap[e.key]] = true;
+});
+
+document.addEventListener("keyup", (e) => {
+  controls[keyMap[e.key]] = false;
+});
+
 function update(delta: number) {
-  socket.emit("controls", activeControls);
+  socket.emit("controls", controls);
+  
+  if (pingDelay >= PING_REQUEST_INTERVAL) {
+    socket.emit("requestPingTime", Date.now());
+    pingDelay = 0;
+  }
 
   bats.forEach((bat) => updateBat(bat, delta));
 
@@ -98,6 +118,7 @@ function update(delta: number) {
       interpolation.y * (1 - interpolation.t) + interpolation.t * player.y;
     interpolation.t = Math.min(interpolation.t + interpolation.speed, 1);
   }
+  pingDelay += delta;
 }
 
 function getTileImageLocation(id: number, metadata: any) {
@@ -240,6 +261,7 @@ function draw() {
     msg += `${waitingTime}s left.`;
     ctx.fillText(msg, 50, 50);
   }
+  ctx.fillText(`Ping: ${pingTimeMS !== -1 ? pingTimeMS + "ms" : "-"}`, 50, 75);
 }
 
 function loop(timestamp) {
