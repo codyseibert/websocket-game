@@ -4,7 +4,10 @@ const tmx = require("tmx-parser");
 const { TILE_SIZE } = require("./constants");
 
 let gameMap: TGameMap;
-let collidables: any[] = [];
+let collidables: TPoint[] = [];
+let portals: TPoint[] = [];
+
+const PORTAL_TILE_ID = 32;
 
 type TMXTileSet = {
   firstGid: number;
@@ -70,7 +73,6 @@ export const loadMap = async (mapName) => {
 
   const grid: any[] = [];
   const gridTiles = tmxMap.layers[0].tiles;
-  console.log(tmxMap.tileSets[0].firstGid);
   for (let i = 0; i < tmxMap.height; i++) {
     const arr: any[] = [];
     for (let j = 0; j < tmxMap.width; j++) {
@@ -86,7 +88,19 @@ export const loadMap = async (mapName) => {
     const arr: any[] = [];
     for (let j = 0; j < tmxMap.width; j++) {
       const tile = tmxDecals[i * tmxMap.width + j];
-      arr.push(tile?.gid ? tile.gid - tmxMap.tileSets[1].firstGid + 1 : 0);
+      if (!tile) {
+        arr.push(0);
+        continue;
+      }
+      const gid = tile.gid - tmxMap.tileSets[1].firstGid + 1;
+      arr.push(gid);
+
+      if (PORTAL_TILE_ID === gid) {
+        portals.push({
+          y: i * TILE_SIZE,
+          x: j * TILE_SIZE,
+        });
+      }
     }
     decals.push(arr);
   }
@@ -141,5 +155,6 @@ export const getZombieSpawn = () => ZOMBIE_SPAWN;
 export const getHumanSpawn = () => HUMAN_SPAWN;
 
 export const getCollidables = () => collidables;
+export const getPortals = () => portals;
 
 export const getGameMap = () => gameMap;

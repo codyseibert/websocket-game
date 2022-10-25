@@ -6,6 +6,7 @@ import zombieRUrl from "../images/zombieR.png";
 import playerLUrl from "../images/playerL.png";
 import zombieLUrl from "../images/zombieL.png";
 import bgUrl from "../images/bg.png";
+import { createBat, drawBat, TBat, updateBat } from "./bat";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -24,6 +25,7 @@ const PLAYER_HEIGHT = 48;
 
 let map: TGameMap | null = null;
 let players: TPlayer[] = [];
+let bats: TBat[] = [];
 const interpolations = {};
 
 const controls = {
@@ -32,6 +34,7 @@ const controls = {
   left: false,
   right: false,
   jump: false,
+  use: false,
 };
 
 const keyMap = {
@@ -40,6 +43,7 @@ const keyMap = {
   a: "left",
   d: "right",
   " ": "jump",
+  e: "use",
 };
 
 let gameState;
@@ -114,6 +118,8 @@ document.addEventListener("keyup", (e) => {
 function update(delta: number) {
   socket.emit("controls", controls);
 
+  bats.forEach((bat) => updateBat(bat, delta));
+
   for (let player of players) {
     const interpolation = interpolations[player.id];
     interpolation.x =
@@ -160,6 +166,8 @@ function draw() {
     bgImage.height
   );
 
+  bats.forEach((bat) => drawBat(bat, ctx, cx, cy));
+
   ctx.fillStyle = "#000000";
 
   if (map) {
@@ -201,6 +209,16 @@ function draw() {
             TILE_SIZE,
             TILE_SIZE
           );
+
+          if (tileType === 32) {
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `16px Verdana`;
+            ctx.fillText(
+              "Teleport (e)",
+              Math.floor(col * TILE_SIZE - cx + 20),
+              Math.floor(row * TILE_SIZE - cy)
+            );
+          }
         }
       }
     }
@@ -268,3 +286,13 @@ function loop(timestamp) {
   window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
+
+setInterval(() => {
+  if (!document.hasFocus()) return;
+
+  bats.push(
+    createBat(5000, (bat) => {
+      bats = bats.filter((b) => b !== bat);
+    })
+  );
+}, 500);
