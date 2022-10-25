@@ -92,17 +92,9 @@ socket.on("ping", (ping: number) => {
   pingTimeMS = ping;
 });
 
-document.addEventListener("keydown", (e) => {
-  controls[keyMap[e.key]] = true;
-});
-
-document.addEventListener("keyup", (e) => {
-  controls[keyMap[e.key]] = false;
-});
-
 function update(delta: number) {
-  socket.emit("controls", controls);
-  
+  socket.emit("controls", activeControls);
+
   if (pingDelay >= PING_REQUEST_INTERVAL) {
     socket.emit("requestPingTime", Date.now());
     pingDelay = 0;
@@ -277,7 +269,7 @@ function loop(timestamp) {
 function startup() {
   setKeymap(defaultKeymap)
   window.requestAnimationFrame(loop);
-  
+
   setInterval(() => {
     if (!document.hasFocus()) return;
 
