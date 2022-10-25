@@ -1,9 +1,8 @@
 {
-  "include": ["./src/**/*", "./client/**/*"],
   "ts-node": {
     "files": true
   },
-  "files": ["src/index.ts", "globals.d.ts"],
+  "files": ["src/index.ts", "types/globals.d.ts"],
   "include": ["**/*.ts"],
   "exclude": [".git", "node_modules"],
   "compilerOptions": {
