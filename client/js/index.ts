@@ -6,41 +6,21 @@ import zombieRUrl from "../images/zombieR.png";
 import playerLUrl from "../images/playerL.png";
 import zombieLUrl from "../images/zombieL.png";
 import bgUrl from "../images/bg.png";
+import {INTERPOLATION_SPEED, PLAYER_HEIGHT, PLAYER_WIDTH, TILE_SIZE} from "./constants";
+import {ctx, setupCanvas} from "./canvas";
+import {activeControls, defaultKeymap, setKeymap} from "./controls";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const width = window.innerWidth;
 const height = window.innerHeight;
-canvas.width = width;
-canvas.height = height;
-const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+setupCanvas(width, height);
+
 let lastRender = 0;
 ctx.fillStyle = "red";
-
-const TILE_SIZE = 128;
-const INTERPOLATION_SPEED = 0.05;
-const PLAYER_WIDTH = 32;
-const PLAYER_HEIGHT = 48;
 
 let map: TGameMap | null = null;
 let players: TPlayer[] = [];
 const interpolations = {};
-
-const controls = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-  jump: false,
-};
-
-const keyMap = {
-  w: "up",
-  s: "down",
-  a: "left",
-  d: "right",
-  " ": "jump",
-};
 
 let gameState;
 let timeLeft = 0;
@@ -103,16 +83,8 @@ socket.on("players", (serverPlayers) => {
   }
 });
 
-document.addEventListener("keydown", (e) => {
-  controls[keyMap[e.key]] = true;
-});
-
-document.addEventListener("keyup", (e) => {
-  controls[keyMap[e.key]] = false;
-});
-
 function update(delta: number) {
-  socket.emit("controls", controls);
+  socket.emit("controls", activeControls);
 
   for (let player of players) {
     const interpolation = interpolations[player.id];
@@ -143,8 +115,8 @@ function draw() {
 
   const playerToFocus = players.find((player) => player.id === socket.id);
   if (playerToFocus) {
-    cx = interpolations[playerToFocus.id].x - canvas.width / 2;
-    cy = interpolations[playerToFocus.id].y - canvas.height / 2;
+    cx = interpolations[playerToFocus.id].x - width / 2;
+    cy = interpolations[playerToFocus.id].y - height / 2;
   }
 
   // background
@@ -162,77 +134,58 @@ function draw() {
 
   ctx.fillStyle = "#000000";
 
+  function drawTile(tileType, toDraw, col: number, row: number) {
+    if (tileType !== 0) {
+      const {x, y} = getTileImageLocation(tileType, map!!.grid.metadata);
+      ctx.drawImage(
+        toDraw,
+        x,
+        y,
+        TILE_SIZE,
+        TILE_SIZE,
+        Math.floor(col * TILE_SIZE - cx),
+        Math.floor(row * TILE_SIZE - cy),
+        TILE_SIZE,
+        TILE_SIZE
+      );
+    }
+  }
+
   if (map) {
     for (let row = 0; row < map.grid.tiles.length; row++) {
       for (let col = 0; col < map.grid.tiles[row].length; col++) {
-        const tileType = map.grid.tiles[row][col];
-
-        if (tileType !== 0) {
-          const { x, y } = getTileImageLocation(tileType, map.grid.metadata);
-          ctx.drawImage(
-            mapImage,
-            x,
-            y,
-            TILE_SIZE,
-            TILE_SIZE,
-            Math.floor(col * TILE_SIZE - cx),
-            Math.floor(row * TILE_SIZE - cy),
-            TILE_SIZE,
-            TILE_SIZE
-          );
-        }
+        drawTile(map.grid.tiles[row][col], mapImage, col, row);
       }
     }
 
     for (let row = 0; row < map.decals.tiles.length; row++) {
       for (let col = 0; col < map.decals.tiles[row].length; col++) {
-        const tileType = map.decals.tiles[row][col];
-
-        if (tileType !== 0) {
-          const { x, y } = getTileImageLocation(tileType, map.decals.metadata);
-          ctx.drawImage(
-            decalImage,
-            x,
-            y,
-            TILE_SIZE,
-            TILE_SIZE,
-            Math.floor(col * TILE_SIZE - cx),
-            Math.floor(row * TILE_SIZE - cy),
-            TILE_SIZE,
-            TILE_SIZE
-          );
-        }
+        drawTile(map.grid.tiles[row][col], decalImage, col, row);
       }
     }
+  }
+
+  function drawPlayer(player: TPlayer, facingLeftImage, facingRightImage, px, py) {
+    ctx.drawImage(
+      player.facingRight ? facingRightImage : facingLeftImage,
+      0,
+      0,
+      PLAYER_WIDTH,
+      PLAYER_HEIGHT,
+      px - cx,
+      py - cy,
+      PLAYER_WIDTH,
+      PLAYER_HEIGHT
+    );
   }
 
   for (let player of players) {
     let { x: px, y: py } = interpolations[player.id];
 
     if (player.isZombie) {
-      ctx.drawImage(
-        player.facingRight ? zombieImageR : zombieImageL,
-        0,
-        0,
-        PLAYER_WIDTH,
-        PLAYER_HEIGHT,
-        px - cx,
-        py - cy,
-        PLAYER_WIDTH,
-        PLAYER_HEIGHT
-      );
+      drawPlayer(player, zombieImageL, zombieImageR, px, py);
     } else {
-      ctx.drawImage(
-        player.facingRight ? playerImageR : playerImageL,
-        0,
-        0,
-        PLAYER_WIDTH,
-        PLAYER_HEIGHT,
-        px - cx,
-        py - cy,
-        PLAYER_WIDTH,
-        PLAYER_HEIGHT
-      );
+      drawPlayer(player, playerImageL, playerImageR, px, py);
     }
 
     // ctx.fillRect(px - cx, py - cy, PLAYER_WIDTH, PLAYER_HEIGHT);
@@ -267,4 +220,10 @@ function loop(timestamp) {
   lastRender = timestamp;
   window.requestAnimationFrame(loop);
 }
-window.requestAnimationFrame(loop);
+
+function startup() {
+  setKeymap(defaultKeymap)
+  window.requestAnimationFrame(loop);
+}
+
+startup()
