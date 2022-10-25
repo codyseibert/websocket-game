@@ -3,7 +3,8 @@ export type CTR_DOWN = "down"
 export type CTR_LEFT = "left"
 export type CTR_RIGHT = "right"
 export type CTR_JUMP = "jump"
-export type CTR_ACTIONS = CTR_UP | CTR_DOWN | CTR_LEFT | CTR_RIGHT | CTR_JUMP
+export type CTR_USE = "use"
+export type CTR_ACTIONS = CTR_UP | CTR_DOWN | CTR_LEFT | CTR_RIGHT | CTR_USE | CTR_JUMP
 export type KeyMap = Record<string, CTR_ACTIONS>
 
 let keyMap: KeyMap = {};
@@ -12,6 +13,7 @@ export const defaultKeymap: KeyMap = {
   s: "down",
   a: "left",
   d: "right",
+  e: "use",
   " ": "jump",
 }
 
@@ -36,5 +38,6 @@ export const activeControls = {
   down: false,
   left: false,
   right: false,
+  use: false,
   jump: false,
 };

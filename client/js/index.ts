@@ -104,14 +104,6 @@ socket.on("ping", (ping: number) => {
   pingTimeMS = ping;
 });
 
-document.addEventListener("keydown", (e) => {
-  activeControls[defaultKeymap[e.key]] = true;
-});
-
-document.addEventListener("keyup", (e) => {
-  activeControls[defaultKeymap[e.key]] = false;
-});
-
 function update(delta: number) {
   socket.emit("controls", activeControls);
   
