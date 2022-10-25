@@ -11,6 +11,8 @@ type TPlayer = {
   name: string;
   isZombie: boolean;
   facingRight: boolean;
+  health: number;
+  lastHit: number;
 };
 
 type TGameMap = {

@@ -3,6 +3,7 @@ import {
   HUMAN_COLOR,
   PLAYERS_NEEDED,
   ZOMBIE_COLOR,
+  HIT_COOLDOWN,
 } from "../constants";
 import {
   GAME_STATE,
@@ -39,6 +40,8 @@ export const startGame = (players: TPlayer[]) => {
 export const turnHuman = (player) => {
   player.color = HUMAN_COLOR;
   player.isZombie = false;
+  player.health = 3;
+  player.lastHit = 0;
 };
 
 export const turnZombie = (player) => {
@@ -69,7 +72,11 @@ export function handlePlayingState(players) {
       if (
         isOverlap(getPlayerBoundingBox(zombie), getPlayerBoundingBox(human))
       ) {
-        turnZombie(human);
+        if (performance.now() - human.lastHit > HIT_COOLDOWN) {
+          human.health--;
+          human.lastHit = performance.now();
+          if (!human.health) turnZombie(human);
+        }
       }
     }
   }
