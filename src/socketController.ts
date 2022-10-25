@@ -83,5 +83,9 @@ export const startSocketController = (server) => {
     socket.on("controls", (controls) => {
       controlsMap[socket.id] = controls;
     });
+    
+    socket.on("requestPingTime", (dateMs) => {
+      socket.emit("ping", Date.now() - dateMs);
+    });
   });
 };

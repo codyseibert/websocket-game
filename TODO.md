@@ -1,4 +1,3 @@
-- display ping in MS next to users
 - make a zombie survival round based game
   - 1 player spawns as zombie, when they hit other players and kill them
     those other players also become zombies

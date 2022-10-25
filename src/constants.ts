@@ -16,6 +16,7 @@ export const PLAYER_HEIGHT: number = 48;
 export const LIMIT_IP: boolean =
   process.env.NODE_ENV === "production" ? true : false;
 export const JUMP_SPEED: number = -28;
+export const PING_REQUEST_INTERVAL:number = 5000; // in ms
 
 export enum CONTROLS {
   UP = "up",
