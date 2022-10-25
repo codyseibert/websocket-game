@@ -1,20 +1,36 @@
 import playerRUrl from "../images/playerR.png";
-import zombieRUrl from "../images/zombieR.png";
 import playerLUrl from "../images/playerL.png";
+import playerR_2Url from "../images/playerR_2.png";
+import playerL_2Url from "../images/playerL_2.png";
+import playerR_1Url from "../images/playerR_1.png";
+import playerL_1Url from "../images/playerL_1.png";
+import bgUrl from "../images/bg.png";
+import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
+
 import { INTERPOLATION_SPEED, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 
-let players: TPlayer[] = [];
-
+const bgImage = new Image();
+bgImage.src = bgUrl;
 const playerImageR = new Image();
 playerImageR.src = playerRUrl;
-const zombieImageR = new Image();
-zombieImageR.src = zombieRUrl;
 const playerImageL = new Image();
 playerImageL.src = playerLUrl;
+const playerImageR_2 = new Image();
+playerImageR_2.src = playerR_2Url;
+const playerImageL_2 = new Image();
+playerImageL_2.src = playerL_2Url;
+const playerImageR_1 = new Image();
+playerImageR_1.src = playerR_1Url;
+const playerImageL_1 = new Image();
+playerImageL_1.src = playerL_1Url;
+const zombieImageR = new Image();
+zombieImageR.src = zombieRUrl;
 const zombieImageL = new Image();
 zombieImageL.src = zombieLUrl;
+
+let players: TPlayer[] = [];
 
 const interpolations = {};
 
@@ -23,14 +39,14 @@ export function getInterpolations() {
 }
 
 function drawPlayer(
+  ctx: CanvasRenderingContext2D,
   player: TPlayer,
   facingLeftImage,
   facingRightImage,
-  px,
-  py,
-  cx,
-  cy,
-  ctx: CanvasRenderingContext2D
+  px: number,
+  py: number,
+  cx: number,
+  cy: number
 ) {
   ctx.drawImage(
     player.facingRight ? facingRightImage : facingLeftImage,
@@ -54,9 +70,37 @@ export function drawPlayers(
     let { x: px, y: py } = interpolations[player.id];
 
     if (player.isZombie) {
-      drawPlayer(player, zombieImageL, zombieImageR, px, py, cx, cy, ctx);
+      drawPlayer(ctx, player, zombieImageL, zombieImageR, px, py, cx, cy);
     } else {
-      drawPlayer(player, playerImageL, playerImageR, px, py, cx, cy, ctx);
+      switch (player.health) {
+        case 3:
+          drawPlayer(ctx, player, playerImageL, playerImageR, px, py, cx, cy);
+          break;
+        case 2:
+          drawPlayer(
+            ctx,
+            player,
+            playerImageL_2,
+            playerImageR_2,
+            px,
+            py,
+            cx,
+            cy
+          );
+          break;
+        case 1:
+          drawPlayer(
+            ctx,
+            player,
+            playerImageL_1,
+            playerImageR_1,
+            px,
+            py,
+            cx,
+            cy
+          );
+          break;
+      }
     }
 
     ctx.fillStyle = player.isZombie ? "#00FF00" : "#0000ff";

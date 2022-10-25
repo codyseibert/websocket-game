@@ -8,6 +8,7 @@ export const ZOMBIE_SPEED: number = 0.4;
 export const END_GAME_SCORE: number = 10;
 export const COIN_SPAWN_RATE: number = 500;
 export const GAME_LENGTH: number = 30000;
+export const HIT_COOLDOWN: number = 650;
 export const PLAYERS_NEEDED: number = 2;
 export const MID_GAME_LENGTH: number = 5000;
 export const HUMAN_COLOR: string = "#FF0000";

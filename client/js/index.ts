@@ -1,4 +1,3 @@
-import { io } from "socket.io-client";
 import { PING_REQUEST_INTERVAL } from "../../src/constants";
 import { ctx, setupCanvas } from "./canvas";
 import { activeControls, defaultKeymap, setKeymap } from "./controls";

@@ -19,8 +19,8 @@ export const defaultKeymap: KeyMap = {
   s: "down",
   a: "left",
   d: "right",
-  " ": "jump",
   e: "use",
+  " ": "jump",
 };
 
 document.addEventListener("keydown", (e) => {
@@ -44,6 +44,6 @@ export const activeControls = {
   down: false,
   left: false,
   right: false,
-  jump: false,
   use: false,
+  jump: false,
 };
