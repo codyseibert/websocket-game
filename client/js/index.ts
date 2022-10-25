@@ -15,7 +15,6 @@ canvas.height = height;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 let lastRender = 0;
 ctx.fillStyle = "red";
-ctx.imageSmoothingEnabled = false;
 
 const TILE_SIZE = 128;
 const INTERPOLATION_SPEED = 0.05;
