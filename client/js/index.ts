@@ -9,6 +9,7 @@ import bgUrl from "../images/bg.png";
 import {INTERPOLATION_SPEED, PLAYER_HEIGHT, PLAYER_WIDTH, TILE_SIZE} from "./constants";
 import {ctx, setupCanvas} from "./canvas";
 import {activeControls, defaultKeymap, setKeymap} from "./controls";
+import { createBat, drawBat, TBat, updateBat } from "./bat";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const width = window.innerWidth;
@@ -20,6 +21,7 @@ ctx.fillStyle = "red";
 
 let map: TGameMap | null = null;
 let players: TPlayer[] = [];
+let bats: TBat[] = [];
 const interpolations = {};
 
 let gameState;
@@ -86,6 +88,8 @@ socket.on("players", (serverPlayers) => {
 function update(delta: number) {
   socket.emit("controls", activeControls);
 
+  bats.forEach((bat) => updateBat(bat, delta));
+
   for (let player of players) {
     const interpolation = interpolations[player.id];
     interpolation.x =
@@ -132,6 +136,8 @@ function draw() {
     bgImage.height
   );
 
+  bats.forEach((bat) => drawBat(bat, ctx, cx, cy));
+
   ctx.fillStyle = "#000000";
 
   function drawTile(tileType, toDraw, col: number, row: number) {
@@ -160,7 +166,32 @@ function draw() {
 
     for (let row = 0; row < map.decals.tiles.length; row++) {
       for (let col = 0; col < map.decals.tiles[row].length; col++) {
-        drawTile(map.grid.tiles[row][col], decalImage, col, row);
+        const tileType = map.decals.tiles[row][col];
+
+        if (tileType !== 0) {
+          const { x, y } = getTileImageLocation(tileType, map.decals.metadata);
+          ctx.drawImage(
+            decalImage,
+            x,
+            y,
+            TILE_SIZE,
+            TILE_SIZE,
+            Math.floor(col * TILE_SIZE - cx),
+            Math.floor(row * TILE_SIZE - cy),
+            TILE_SIZE,
+            TILE_SIZE
+          );
+
+          if (tileType === 32) {
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `16px Verdana`;
+            ctx.fillText(
+              "Teleport (e)",
+              Math.floor(col * TILE_SIZE - cx + 20),
+              Math.floor(row * TILE_SIZE - cy)
+            );
+          }
+        }
       }
     }
   }
@@ -224,6 +255,17 @@ function loop(timestamp) {
 function startup() {
   setKeymap(defaultKeymap)
   window.requestAnimationFrame(loop);
+  
+  setInterval(() => {
+    if (!document.hasFocus()) return;
+
+    bats.push(
+      createBat(5000, (bat) => {
+        bats = bats.filter((b) => b !== bat);
+      })
+    );
+  }, 500);
 }
 
 startup()
+

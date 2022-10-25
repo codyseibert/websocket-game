@@ -17,7 +17,7 @@ const ipSet = new Set<string>();
 const socketMap = {};
 
 export const getControlsForPlayer = (playerId: string) => {
-  return controlsMap[playerId];
+  return controlsMap[playerId] ?? {};
 };
 
 export const emitPlayers = (players: any) => {

@@ -39,7 +39,16 @@ export const getPlayerBoundingBox = getBoundingRectangleFactory(
   PLAYER_WIDTH,
   PLAYER_HEIGHT
 );
-export const getTileBoundingBox = getBoundingBoxFactory(TILE_SIZE);
+
+export const getPortalBoundingBox = getBoundingRectangleFactory(
+  TILE_SIZE,
+  TILE_SIZE
+);
+
+export const getTileBoundingBox = getBoundingRectangleFactory(
+  TILE_SIZE,
+  TILE_SIZE / 2
+);
 
 export const isCollidingWithMap = (player, collidables) => {
   for (const collidable of collidables) {
