@@ -14,7 +14,7 @@ import { getPlayerBoundingBox, isOverlap } from "../geom";
 import { emitTimeLeft } from "../socketController";
 import { goToMidGameState } from "./midGameState";
 import { gotoWaitingState } from "./waitingState";
-import { performance }  from 'perf_hooks';
+import { performance } from "perf_hooks";
 
 let gameStartTime: number;
 let timeLeft: number;
@@ -41,7 +41,7 @@ export const turnHuman = (player) => {
   player.isZombie = false;
 };
 
-const turnZombie = (player) => {
+export const turnZombie = (player) => {
   player.color = ZOMBIE_COLOR;
   player.isZombie = true;
 };

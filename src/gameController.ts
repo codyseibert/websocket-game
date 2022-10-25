@@ -1,4 +1,4 @@
-import { TICK_RATE } from "./constants";
+import { CONTROLS, TICK_RATE } from "./constants";
 import random from "random-name";
 import { getHumanSpawn, getZombieSpawn, loadMap } from "./mapController";
 import { emitPlayers, emitGameState } from "./socketController";
@@ -6,6 +6,7 @@ import { handleWaitingState } from "./states/waitingState";
 import { handlePlayingState } from "./states/playingState";
 import { handleGamePhysics } from "./physicsController";
 import { handleMidGameState } from "./states/midGameState";
+import { handlePortalLogic } from "./portalController";
 
 export let players: TPlayer[] = [];
 
@@ -74,6 +75,7 @@ export const setGameState = (newState: GAME_STATE) => {
 
 const tick = (delta: number) => {
   handleGamePhysics(players, delta);
+  handlePortalLogic(players);
 
   if (gameState === GAME_STATE.MidGame) {
     handleMidGameState();
