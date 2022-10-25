@@ -10,6 +10,8 @@ export type TBat = {
   onRemove: (bat: TBat) => void;
 };
 
+let bats: TBat[] = [];
+
 const BAT_FRAME_SIZE = 32;
 const BAT_ANIMATION_RATE = 100;
 const TOTAL_FRAMES = 4;
@@ -67,3 +69,25 @@ export function createBat(mapHeight: number, onRemove: (bat: TBat) => void) {
 
   return bat;
 }
+
+export function updateBats(delta: number) {
+  bats.forEach((bat) => updateBat(bat, delta));
+}
+
+export function drawBats(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number
+) {
+  bats.forEach((bat) => drawBat(bat, ctx, cx, cy));
+}
+
+setInterval(() => {
+  if (!document.hasFocus()) return;
+
+  bats.push(
+    createBat(5000, (bat) => {
+      bats = bats.filter((b) => b !== bat);
+    })
+  );
+}, 500);
