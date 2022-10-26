@@ -13,6 +13,8 @@ mapImage.src = tilesheetUrl;
 const decalImage = new Image();
 decalImage.src = decalsUrl;
 
+const PORTAL_ID = 32;
+
 export function setMap(newMap: TGameMap) {
   map = newMap;
 }
@@ -97,7 +99,7 @@ export function drawTiles(ctx: CanvasRenderingContext2D, camera: Camera) {
       );
 
       const tileType = map.decals.tiles[row][col];
-      if (tileType === 32) {
+      if (tileType === PORTAL_ID) {
         ctx.fillStyle = "#ffffff";
         ctx.font = `16px Verdana`;
         ctx.fillText(
