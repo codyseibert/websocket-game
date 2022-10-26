@@ -76,8 +76,8 @@ export const setGameState = (newState: GAME_STATE) => {
 };
 
 const getProcessMs = () => {
-  const hrTime = process.hrtime()
-  return (hrTime[0] * 1000000000 + hrTime[1]) / 1000000
+  const hrTime = process.hrtime();
+  return (hrTime[0] * 1e9 + hrTime[1]) / 1e6;
 }
 
 const tick = (delta: number) => {
@@ -97,7 +97,7 @@ const tick = (delta: number) => {
 
 loadMap("default");
 
-let lastUpdate = getProcessMs()
+let lastUpdate = getProcessMs();
 setInterval(() => {
   const now = getProcessMs();
   tick(now - lastUpdate);
