@@ -1,5 +1,4 @@
 import { io } from "socket.io-client";
-import { setupCanvas } from "./canvas";
 import { setGameState } from "./game";
 import {
   setPingTimeMs,

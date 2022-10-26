@@ -1,4 +1,5 @@
 import batUrl from "../images/bats.png";
+import { Camera } from "./camera";
 const batImage = new Image();
 batImage.src = batUrl;
 
@@ -39,10 +40,9 @@ export function getSpriteFrameLocation(bat: TBat) {
 }
 
 export function drawBat(
-  bat: TBat,
   ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number
+  bat: TBat,
+  camera: Camera
 ) {
   const frameLocation = getSpriteFrameLocation(bat);
   ctx.drawImage(
@@ -51,8 +51,8 @@ export function drawBat(
     frameLocation.y,
     BAT_FRAME_SIZE,
     BAT_FRAME_SIZE,
-    bat.x - cx,
-    bat.y - cy,
+    bat.x - camera.cx,
+    bat.y - camera.cy,
     BAT_FRAME_SIZE,
     BAT_FRAME_SIZE
   );
@@ -74,12 +74,8 @@ export function updateBats(delta: number) {
   bats.forEach((bat) => updateBat(bat, delta));
 }
 
-export function drawBats(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number
-) {
-  bats.forEach((bat) => drawBat(bat, ctx, cx, cy));
+export function drawBats(ctx: CanvasRenderingContext2D, camera: Camera) {
+  bats.forEach((bat) => drawBat(ctx, bat, camera));
 }
 
 setInterval(() => {

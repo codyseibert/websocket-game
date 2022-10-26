@@ -10,6 +10,7 @@ import zombieLUrl from "../images/zombieL.png";
 
 import { INTERPOLATION_SPEED, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
+import { Camera } from "./camera";
 
 const bgImage = new Image();
 bgImage.src = bgUrl;
@@ -45,8 +46,7 @@ function drawPlayer(
   facingRightImage,
   px: number,
   py: number,
-  cx: number,
-  cy: number
+  camera: Camera
 ) {
   ctx.drawImage(
     player.facingRight ? facingRightImage : facingLeftImage,
@@ -54,27 +54,23 @@ function drawPlayer(
     0,
     PLAYER_WIDTH,
     PLAYER_HEIGHT,
-    px - cx,
-    py - cy,
+    px - camera.cx,
+    py - camera.cy,
     PLAYER_WIDTH,
     PLAYER_HEIGHT
   );
 }
 
-export function drawPlayers(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number
-) {
+export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
   for (let player of players) {
     let { x: px, y: py } = interpolations[player.id];
 
     if (player.isZombie) {
-      drawPlayer(ctx, player, zombieImageL, zombieImageR, px, py, cx, cy);
+      drawPlayer(ctx, player, zombieImageL, zombieImageR, px, py, camera);
     } else {
       switch (player.health) {
         case 3:
-          drawPlayer(ctx, player, playerImageL, playerImageR, px, py, cx, cy);
+          drawPlayer(ctx, player, playerImageL, playerImageR, px, py, camera);
           break;
         case 2:
           drawPlayer(
@@ -84,8 +80,7 @@ export function drawPlayers(
             playerImageR_2,
             px,
             py,
-            cx,
-            cy
+            camera
           );
           break;
         case 1:
@@ -96,8 +91,7 @@ export function drawPlayers(
             playerImageR_1,
             px,
             py,
-            cx,
-            cy
+            camera
           );
           break;
       }
@@ -105,7 +99,7 @@ export function drawPlayers(
 
     ctx.fillStyle = player.isZombie ? "#00FF00" : "#0000ff";
     ctx.font = `16px Verdana`;
-    ctx.fillText(player.name, px - 10 - cx, py - 10 - cy);
+    ctx.fillText(player.name, px - 10 - camera.cx, py - 10 - camera.cy);
   }
 }
 

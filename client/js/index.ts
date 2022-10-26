@@ -31,11 +31,11 @@ function update(delta: number) {
 
 function draw() {
   ctx.clearRect(0, 0, width, height);
-  let { cx, cy } = getCamera();
-  drawBackground(ctx, cx, cy);
-  drawBats(ctx, cx, cy);
-  drawTiles(ctx, cx, cy);
-  drawPlayers(ctx, cx, cy);
+  const camera = getCamera();
+  drawBackground(ctx, camera);
+  drawBats(ctx, camera);
+  drawTiles(ctx, camera);
+  drawPlayers(ctx, camera);
   drawHud(ctx);
 }
 

@@ -1,8 +1,8 @@
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
-export function setupCanvas(w: number, h: number) {
-  canvas.width = w;
-  canvas.height = h;
+export function setupCanvas(width: number, height: number) {
+  canvas.width = width;
+  canvas.height = height;
   return canvas.getContext("2d") as CanvasRenderingContext2D;
 }
 

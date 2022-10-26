@@ -2,6 +2,7 @@ import tilesheetUrl from "../images/tilesheet.png";
 import decalsUrl from "../images/decals.png";
 import bgUrl from "../images/bg.png";
 import { TILE_SIZE } from "./constants";
+import { Camera } from "./camera";
 
 let map: TGameMap | null = null;
 
@@ -33,83 +34,77 @@ function drawTile(
   toDraw,
   col: number,
   row: number,
-  cx: number,
-  cy: number
+  camera: Camera,
+  metadata: any
 ) {
   if (tileType !== 0) {
-    const { x, y } = getTileImageLocation(tileType, map!!.grid.metadata);
+    const { x, y } = getTileImageLocation(tileType, metadata);
     ctx.drawImage(
       toDraw,
       x,
       y,
       TILE_SIZE,
       TILE_SIZE,
-      Math.floor(col * TILE_SIZE - cx),
-      Math.floor(row * TILE_SIZE - cy),
+      Math.floor(col * TILE_SIZE - camera.cx),
+      Math.floor(row * TILE_SIZE - camera.cy),
       TILE_SIZE,
       TILE_SIZE
     );
   }
 }
 
-export function drawBackground(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number
-) {
+export function drawBackground(ctx: CanvasRenderingContext2D, camera: Camera) {
   ctx.drawImage(
     bgImage,
     0,
     0,
     bgImage.width,
     bgImage.height,
-    0 - cx / 20 - 50,
-    0 - cy / 20 - 50,
+    0 - camera.cx / 20 - 50,
+    0 - camera.cy / 20 - 50,
     bgImage.width,
     bgImage.height
   );
 }
 
-export function drawTiles(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number
-) {
+export function drawTiles(ctx: CanvasRenderingContext2D, camera: Camera) {
   if (!map) return;
 
   for (let row = 0; row < map.grid.tiles.length; row++) {
     for (let col = 0; col < map.grid.tiles[row].length; col++) {
-      drawTile(ctx, map.grid.tiles[row][col], mapImage, col, row, cx, cy);
+      drawTile(
+        ctx,
+        map.grid.tiles[row][col],
+        mapImage,
+        col,
+        row,
+        camera,
+        map.grid.metadata
+      );
     }
   }
 
   for (let row = 0; row < map.decals.tiles.length; row++) {
     for (let col = 0; col < map.decals.tiles[row].length; col++) {
+      drawTile(
+        ctx,
+        map.decals.tiles[row][col],
+        decalImage,
+        col,
+        row,
+        camera,
+        map.decals.metadata
+      );
+
       const tileType = map.decals.tiles[row][col];
-
-      if (tileType !== 0) {
-        const { x, y } = getTileImageLocation(tileType, map.decals.metadata);
-        ctx.drawImage(
-          decalImage,
-          x,
-          y,
-          TILE_SIZE,
-          TILE_SIZE,
-          Math.floor(col * TILE_SIZE - cx),
-          Math.floor(row * TILE_SIZE - cy),
-          TILE_SIZE,
-          TILE_SIZE
+      if (tileType === 32) {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `16px Verdana`;
+        ctx.fillText(
+          "Teleport (e)",
+          Math.floor(col * TILE_SIZE - camera.cx + 20),
+          Math.floor(row * TILE_SIZE - camera.cy)
         );
-
-        if (tileType === 32) {
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `16px Verdana`;
-          ctx.fillText(
-            "Teleport (e)",
-            Math.floor(col * TILE_SIZE - cx + 20),
-            Math.floor(row * TILE_SIZE - cy)
-          );
-        }
       }
     }
   }
