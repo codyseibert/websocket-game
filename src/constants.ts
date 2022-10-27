@@ -1,6 +1,6 @@
 export const PORT: string | number = process.env.PORT || 3000;
 export const GRAVITY: number = 0.001;
-export const TICK_RATE: number = 30;
+export const TICK_RATE: number = 10;
 export const TILE_SIZE: number = 128;
 export const COIN_SIZE: number = 6;
 export const PLAYER_SPEED: number = 0.5;

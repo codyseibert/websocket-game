@@ -8,10 +8,27 @@ import bgUrl from "../images/bg.png";
 import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
 
-import { DRAW_HITBOX, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
-import { getMyPlayerId } from "./socket";
+import {
+  DRAW_HITBOX,
+  INTERPOLATE_RATE,
+  INTERPOLATION_SPEED,
+  PLAYER_HEIGHT,
+  PLAYER_WIDTH,
+} from "./constants";
+import {
+  emitJump,
+  emitMoveLeft,
+  emitMoveRight,
+  emitUse,
+  getMyPlayerId,
+} from "./socket";
 import { Camera } from "./camera";
-import { TICK_RATE } from "../../src/constants";
+import { CONTROLS, TICK_RATE } from "../../src/constants";
+import { getClientControls } from "./controls";
+import { handlePlayerXMovement } from "../../src/physics/handlePlayerXMovement";
+import { handlePlayerYMovement } from "../../src/physics/handlePlayerYMovement";
+import { getCollidables } from "./map";
+import { handlePlayerJump } from "../../src/physics/handlePlayerJump";
 
 const bgImage = new Image();
 bgImage.src = bgUrl;
@@ -101,11 +118,56 @@ export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
   }
 }
 
+let canJump = true;
+
 export function updatePlayers(delta: number) {
+  const myPlayer = getMyPlayer();
+  const clientControls = getClientControls();
+  if (myPlayer) {
+    handlePlayerXMovement(myPlayer, delta, clientControls, () => {
+      emitMoveRight(delta);
+    });
+    handlePlayerYMovement(
+      myPlayer,
+      delta,
+      () => (canJump = true),
+      getCollidables
+    );
+    handlePlayerJump(
+      myPlayer,
+      canJump,
+      clientControls,
+      () => (canJump = false)
+    );
+
+    // const target = interpolations[myPlayer.id];
+    // const dx = target.x - myPlayer.x;
+    // const dy = target.y - myPlayer.y;
+    // const distance = Math.sqrt(dx * dx + dy * dy);
+    // if (distance > 300) {
+    //   myPlayer.x = target.x;
+    //   myPlayer.y = target.y;
+    // }
+  }
+
+  // for (let player of players) {
+  //   const target = interpolations[player.id];
+  //   if (!target) continue;
+  //   if (player.id === getMyPlayerId()) continue;
+  //   const t = target.t / (1000 / TICK_RATE);
+  //   const tx = Math.abs(target.x - player.x)
+  //   player.x = player.x * (1 - t) + t * target.x;
+  //   player.y = player.y * (1 - t) + t * target.y;
+  //   target.t += delta;
+  // }
+}
+
+export function interpolatePlayers(delta: number) {
   for (let player of players) {
     const target = interpolations[player.id];
     if (!target) continue;
-    const t = target.t / (1000 / TICK_RATE);
+    if (player.id === getMyPlayerId()) continue;
+    const t = target.t / (1000 / 4);
     player.x = player.x * (1 - t) + t * target.x;
     player.y = player.y * (1 - t) + t * target.y;
     target.t += delta;
@@ -139,7 +201,7 @@ export function setPlayers(newPlayers: TPlayer[]) {
   for (const player of newPlayers) {
     const matchingPlayer = players.find((p) => p.id === player.id);
     if (!matchingPlayer) continue;
-    const { x, y, ...props } = player;
+    const { x, y, vx, vy, ...props } = player;
     Object.assign(matchingPlayer, props);
     interpolations[player.id].y = player.y;
     interpolations[player.id].x = player.x;

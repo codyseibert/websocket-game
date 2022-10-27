@@ -15,9 +15,25 @@ decalImage.src = decalsUrl;
 
 const PORTAL_ID = 32;
 
+let collidables: TPoint[] = [];
+
 export function setMap(newMap: TGameMap) {
   map = newMap;
+
+  collidables = [];
+  for (let row = 0; row < newMap.grid.tiles.length; row++) {
+    for (let col = 0; col < newMap.grid.tiles[row].length; col++) {
+      if (newMap.grid.tiles[row][col] !== 0) {
+        collidables.push({
+          y: row * TILE_SIZE,
+          x: col * TILE_SIZE,
+        });
+      }
+    }
+  }
 }
+
+export const getCollidables = () => collidables;
 
 function getTileImageLocation(id: number, metadata: any) {
   if (!map) return { x: 0, y: 0 };

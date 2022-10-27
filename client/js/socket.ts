@@ -69,3 +69,11 @@ export function emitJump() {
 export function emitUse() {
   emit("use", null);
 }
+
+export function emitMoveRight(delta: number) {
+  emit("right", delta);
+}
+
+export function emitMoveLeft() {
+  emit("left", null);
+}

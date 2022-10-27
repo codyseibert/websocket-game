@@ -15,6 +15,7 @@ const controlsMap: Record<string, TControlMap> = {};
 const playerSocketMap = {};
 const ipSet = new Set<string>();
 const socketMap = {};
+const actionQueue: Record<string, CONTROLS[]> = ({} = {});
 
 function emitToSocket(channel, eventName, value) {
   if (MOCK_PING_DELAY) {
@@ -59,6 +60,17 @@ export const emitWonMessage = (message: string) => {
 export const emitTimeLeft = (time: number) => {
   emitToSocket(io, "timeLeft", time);
 };
+
+function pushAction(playerId: string, action: CONTROLS) {
+  if (!actionQueue[playerId]) {
+    actionQueue[playerId] = [];
+  }
+  actionQueue[playerId].push(action);
+}
+
+export function getActionsForPlayer(playerId: string) {
+  return actionQueue[playerId];
+}
 
 export const startSocketController = (server) => {
   io = new Server(server, {
@@ -108,6 +120,17 @@ export const startSocketController = (server) => {
     socket.on("use", () => {
       const controlMap = getControlsForPlayer(socket.id);
       controlMap[CONTROLS.USE] = true;
+    });
+
+    socket.on("right", (value: boolean) => {
+      const controlMap = getControlsForPlayer(socket.id);
+      controlMap[CONTROLS.RIGHT] = value;
+      pushAction(socket.id, CONTROLS.RIGHT);
+    });
+
+    socket.on("left", (value: boolean) => {
+      const controlMap = getControlsForPlayer(socket.id);
+      controlMap[CONTROLS.LEFT] = value;
     });
 
     socket.on("controls", (controls: TControlMap) => {

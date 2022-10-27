@@ -1,7 +1,11 @@
 import { TICK_RATE } from "./constants";
 import random from "random-name";
 import { getHumanSpawn, getZombieSpawn, loadMap } from "./mapController";
-import { emitPlayers, emitGameState } from "./socketController";
+import {
+  emitPlayers,
+  emitGameState,
+  getControlsForPlayer,
+} from "./socketController";
 import { handleWaitingState } from "./states/waitingState";
 import { handlePlayingState } from "./states/playingState";
 import { handleGamePhysics } from "./physicsController";
@@ -90,6 +94,19 @@ const tick = (delta: number) => {
     handleWaitingState(players);
   } else if (gameState === GAME_STATE.Playing) {
     handlePlayingState(players);
+  }
+
+  // reset controls
+  for (const player of players) {
+    const controls = getControlsForPlayer(player.id);
+    Object.assign(controls, {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      use: false,
+      jump: false,
+    });
   }
 
   emitPlayers(players);

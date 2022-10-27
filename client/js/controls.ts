@@ -1,4 +1,11 @@
-import { emitControls } from "./socket";
+import { TControlMap } from "../../src/constants";
+import {
+  emitControls,
+  emitJump,
+  emitMoveLeft,
+  emitMoveRight,
+  emitUse,
+} from "./socket";
 
 export enum CTR_ACTIONS {
   UP = "up",
@@ -21,7 +28,7 @@ export const defaultKeymap: KeyMap = {
   " ": CTR_ACTIONS.JUMP,
 };
 
-export const activeControls = {
+export const activeControls: TControlMap = {
   up: false,
   down: false,
   left: false,
@@ -32,12 +39,18 @@ export const activeControls = {
 
 document.addEventListener("keydown", (e) => {
   activeControls[keyMap[e.key]] = true;
-  emitControls(activeControls);
+
+  if (keyMap[e.key] === CTR_ACTIONS.JUMP) {
+    emitJump();
+  }
+
+  if (keyMap[e.key] === CTR_ACTIONS.USE) {
+    emitUse();
+  }
 });
 
 document.addEventListener("keyup", (e) => {
   activeControls[keyMap[e.key]] = false;
-  emitControls(activeControls);
 });
 
 export function setKeymap(map: KeyMap) {
@@ -50,4 +63,8 @@ export function getKeymap(): KeyMap {
 
 export function isCommandDown(command: CTR_ACTIONS) {
   return !!activeControls[command];
+}
+
+export function getClientControls() {
+  return activeControls;
 }

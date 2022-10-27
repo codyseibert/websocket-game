@@ -26,10 +26,6 @@ const getBoundingRectangleFactory =
     } as TRectangle;
   };
 
-const getBoundingBoxFactory = (STATIC_SIZE: number) => (entity) => {
-  return getBoundingRectangleFactory(STATIC_SIZE, STATIC_SIZE)(entity);
-};
-
 export const getPlayerBoundingBox = getBoundingRectangleFactory(
   PLAYER_WIDTH,
   PLAYER_HEIGHT
