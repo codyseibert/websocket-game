@@ -1,4 +1,4 @@
-import { CONTROLS, TICK_RATE } from "./constants";
+import { TICK_RATE } from "./constants";
 import random from "random-name";
 import { getHumanSpawn, getZombieSpawn, loadMap } from "./mapController";
 import { emitPlayers, emitGameState } from "./socketController";

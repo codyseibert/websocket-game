@@ -102,21 +102,6 @@ export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
 }
 
 export function updatePlayers(delta: number) {
-  // const myPlayer = getMyPlayer();
-
-  // if (myPlayer) {
-  //   const speed = myPlayer.isZombie ? ZOMBIE_SPEED : PLAYER_SPEED;
-  //   const target = interpolations[myPlayer.id];
-
-  //   if (isCommandDown(CTR_ACTIONS.RIGHT)) {
-  //     target.x += speed * delta;
-  //   }
-
-  //   if (isCommandDown(CTR_ACTIONS.LEFT)) {
-  //     target.x -= speed * delta;
-  //   }
-  // }
-
   for (let player of players) {
     const target = interpolations[player.id];
     if (!target) continue;

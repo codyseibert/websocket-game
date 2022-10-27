@@ -1,12 +1,12 @@
 import { PING_REQUEST_INTERVAL } from "../../src/constants";
 import { ctx, setupCanvas } from "./canvas";
-import { activeControls, defaultKeymap, setKeymap } from "./controls";
+import { defaultKeymap, setKeymap } from "./controls";
 import { drawBats, updateBats } from "./bat";
 import { drawPlayers, updatePlayers } from "./player";
 import { drawBackground, drawTiles } from "./map";
 import { getCamera } from "./camera";
 import { drawHud } from "./hud";
-import { emitControls, emitRequestPingTime } from "./socket";
+import { emitRequestPingTime } from "./socket";
 
 const width = window.innerWidth;
 const height = window.innerHeight;

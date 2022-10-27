@@ -1,5 +1,5 @@
 import { getCanvasSize } from "./canvas";
-import { getInterpolations, getMyPlayer } from "./player";
+import { getMyPlayer } from "./player";
 
 export type Camera = {
   cx: number;
