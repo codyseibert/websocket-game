@@ -6,8 +6,8 @@
   "scripts": {
     "dev:client": "parcel client/index.html",
     "dev:server": "nodemon src/index.ts",
-    "build": "WS_SERVER='' parcel build client/index.html",
-    "start": "ts-node src/index.ts"
+    "build": "NODE_ENV=production WS_SERVER='' parcel build client/index.html",
+    "start": "NODE_ENV=production ts-node src/index.ts"
   },
   "repository": {
     "type": "git",
