@@ -38,14 +38,20 @@ function handlePlayerXMovement(player: TPlayer, delta: number) {
 
 function handlePlayerYMovement(player: TPlayer, delta: number) {
   const futureY = player.y + player.vy * delta;
-  if (isCollidingWithMap({ ...player, y: futureY }, getCollidables())) {
-    if (player.vy > 0) {
-      canJump[player.id] = true;
-    }
+  if (
+    player.vy > 0 &&
+    isCollidingWithMap({ ...player, y: futureY }, getCollidables())
+  ) {
+    canJump[player.id] = true;
     player.y =
       Math.floor((futureY + PLAYER_HEIGHT) / TILE_SIZE) * TILE_SIZE -
       PLAYER_HEIGHT;
     player.vy = 0;
+  } else if (
+    player.vy < 0 &&
+    isCollidingWithMap({ ...player, y: futureY }, getCollidables())
+  ) {
+    player.vy = 0.2;
   } else {
     player.y += player.vy * delta;
     player.vy += GRAVITY * delta;
