@@ -2,6 +2,7 @@ import {
   CONTROLS,
   GRAVITY,
   JUMP_SPEED,
+  PLAYER_HEIGHT,
   PLAYER_SPEED,
   TControlMap,
   TILE_SIZE,
@@ -36,14 +37,18 @@ function handlePlayerXMovement(player: TPlayer, delta: number) {
 }
 
 function handlePlayerYMovement(player: TPlayer, delta: number) {
-  player.vy += GRAVITY * delta;
-  player.y += player.vy;
-  if (isCollidingWithMap(player, getCollidables())) {
+  const futureY = player.y + player.vy * delta;
+  if (isCollidingWithMap({ ...player, y: futureY }, getCollidables())) {
     if (player.vy > 0) {
       canJump[player.id] = true;
     }
-    player.y -= player.vy;
+    player.y =
+      Math.floor((futureY + PLAYER_HEIGHT) / TILE_SIZE) * TILE_SIZE -
+      PLAYER_HEIGHT;
     player.vy = 0;
+  } else {
+    player.y += player.vy * delta;
+    player.vy += GRAVITY * delta;
   }
 }
 

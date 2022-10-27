@@ -8,13 +8,10 @@ import bgUrl from "../images/bg.png";
 import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
 
-import { PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
+import { DRAW_HITBOX, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 import { Camera } from "./camera";
-import { CTR_ACTIONS, isCommandDown } from "./controls";
-import { PLAYER_SPEED, ZOMBIE_SPEED } from "../../src/constants";
-
-const INTERPOLATION_DISTANCE = 0.8;
+import { TICK_RATE } from "../../src/constants";
 
 const bgImage = new Image();
 bgImage.src = bgUrl;
@@ -37,7 +34,13 @@ zombieImageL.src = zombieLUrl;
 
 let players: TPlayer[] = [];
 
-const interpolations: Record<string, TPoint> = {};
+type TInterpolation = {
+  x: number;
+  y: number;
+  t: number;
+};
+
+const interpolations: Record<string, TInterpolation> = {};
 
 export function getInterpolations() {
   return interpolations;
@@ -62,6 +65,15 @@ const drawPlayerFactory =
 export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
   for (let player of players) {
     const drawPlayer = drawPlayerFactory(ctx, player, camera);
+
+    if (DRAW_HITBOX) {
+      ctx.fillRect(
+        interpolations[player.id].x - camera.cx,
+        interpolations[player.id].y - camera.cy,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+      );
+    }
 
     if (player.isZombie) {
       drawPlayer(zombieImageL, zombieImageR);
@@ -94,26 +106,24 @@ export function updatePlayers(delta: number) {
 
   // if (myPlayer) {
   //   const speed = myPlayer.isZombie ? ZOMBIE_SPEED : PLAYER_SPEED;
+  //   const target = interpolations[myPlayer.id];
 
   //   if (isCommandDown(CTR_ACTIONS.RIGHT)) {
-  //     console.log("moving right");
-  //     myPlayer.x += speed * delta;
+  //     target.x += speed * delta;
   //   }
 
   //   if (isCommandDown(CTR_ACTIONS.LEFT)) {
-  //     console.log("moving LEFT");
+  //     target.x -= speed * delta;
   //   }
   // }
 
   for (let player of players) {
     const target = interpolations[player.id];
     if (!target) continue;
-    const dx = (player.x - target.x) ** 2;
-    const dy = (player.y - target.y) ** 2;
-    const d = Math.sqrt(dx + dy);
-    const t = Math.min(1, d / INTERPOLATION_DISTANCE);
+    const t = target.t / (1000 / TICK_RATE);
     player.x = player.x * (1 - t) + t * target.x;
     player.y = player.y * (1 - t) + t * target.y;
+    target.t += delta;
   }
 }
 
@@ -125,6 +135,7 @@ export function setPlayers(newPlayers: TPlayer[]) {
       interpolations[player.id] = {
         x: player.x,
         y: player.y,
+        t: 0,
       };
     }
   }
@@ -139,15 +150,15 @@ export function setPlayers(newPlayers: TPlayer[]) {
     }
   }
 
+  // sync players with server state
   for (const player of newPlayers) {
     const matchingPlayer = players.find((p) => p.id === player.id);
     if (!matchingPlayer) continue;
     const { x, y, ...props } = player;
     Object.assign(matchingPlayer, props);
-    interpolations[player.id] = {
-      x: player.x,
-      y: player.y,
-    };
+    interpolations[player.id].y = player.y;
+    interpolations[player.id].x = player.x;
+    interpolations[player.id].t = 0;
   }
 }
 

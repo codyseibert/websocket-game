@@ -15,7 +15,6 @@ const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 const emit = (eventName: string, value: any) => {
   if (MOCK_PING_DELAY) {
     setTimeout(() => {
-      console.log("actually emit");
       socket.emit(eventName, value);
     }, MOCK_PING_DELAY);
   } else {

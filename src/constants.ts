@@ -1,6 +1,6 @@
 export const PORT: string | number = process.env.PORT || 3000;
-export const GRAVITY: number = 0.0428;
-export const TICK_RATE: number = 30;
+export const GRAVITY: number = 0.001;
+export const TICK_RATE: number = 10;
 export const TILE_SIZE: number = 128;
 export const COIN_SIZE: number = 6;
 export const PLAYER_SPEED: number = 0.5;
@@ -19,8 +19,8 @@ export const PLAYER_WIDTH: number = 32;
 export const PLAYER_HEIGHT: number = 48;
 export const LIMIT_IP: boolean =
   process.env.NODE_ENV === "production" ? true : false;
-export const PING_REQUEST_INTERVAL: number = 5000; // in ms
-export const JUMP_SPEED: number = -29;
+export const PING_REQUEST_INTERVAL: number = 1000; // in ms
+export const JUMP_SPEED: number = -0.75;
 
 export enum CONTROLS {
   UP = "up",
