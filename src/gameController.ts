@@ -75,6 +75,11 @@ export const setGameState = (newState: GAME_STATE) => {
   emitGameState(gameState);
 };
 
+const getProcessMs = () => {
+  const hrTime = process.hrtime();
+  return (hrTime[0] * 1e9 + hrTime[1]) / 1e6;
+}
+
 const tick = (delta: number) => {
   handleGamePhysics(players, delta);
   handlePortalLogic(players);
@@ -92,9 +97,9 @@ const tick = (delta: number) => {
 
 loadMap("default");
 
-let lastUpdate = Date.now();
+let lastUpdate = getProcessMs();
 setInterval(() => {
-  const now = Date.now();
+  const now = getProcessMs();
   tick(now - lastUpdate);
   lastUpdate = now;
 }, 1000 / TICK_RATE);
