@@ -46,8 +46,8 @@ socket.on("players", (serverPlayers) => {
   setPlayers(serverPlayers);
 });
 
-socket.on("ping", (ping: number) => {
-  setPingTimeMs(ping);
+socket.on("pong", (initialTime: number) => {
+  setPingTimeMs(Date.now() - initialTime);
 });
 
 export function getMyPlayerId() {
@@ -59,7 +59,7 @@ export function emitControls(activeControls) {
 }
 
 export function emitRequestPingTime() {
-  emit("requestPingTime", Date.now());
+  emit("ping", Date.now());
 }
 
 export function emitJump() {

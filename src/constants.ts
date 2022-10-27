@@ -8,8 +8,9 @@ export const ZOMBIE_SPEED: number = 0.4;
 export const END_GAME_SCORE: number = 10;
 export const COIN_SPAWN_RATE: number = 500;
 export const GAME_LENGTH: number = 30000;
-export const MOCK_PING_DELAY: number | null =
-  process.env.NODE_ENV === "production" ? null : 20;
+export const MOCK_PING_DELAY: number | null = process.env.MOCK_PING_DELAY
+  ? parseInt(process.env.MOCK_PING_DELAY)
+  : null;
 export const HIT_COOLDOWN: number = 650;
 export const PLAYERS_NEEDED: number = 2;
 export const MID_GAME_LENGTH: number = 5000;

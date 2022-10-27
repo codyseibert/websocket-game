@@ -111,12 +111,11 @@ export const startSocketController = (server) => {
     });
 
     socket.on("controls", (controls: TControlMap) => {
-      const controlMap = getControlsForPlayer(socket.id);
       Object.assign(getControlsForPlayer(socket.id), controls);
     });
 
-    socket.on("requestPingTime", (dateMs) => {
-      emitToSocket(socket, "ping", Date.now() - dateMs);
+    socket.on("ping", (dateMs) => {
+      emitToSocket(socket, "pong", dateMs);
     });
   });
 };
