@@ -17,8 +17,7 @@ export const HUMAN_COLOR: string = "#FF0000";
 export const ZOMBIE_COLOR: string = "#00FF00";
 export const PLAYER_WIDTH: number = 32;
 export const PLAYER_HEIGHT: number = 48;
-export const LIMIT_IP: boolean =
-  process.env.NODE_ENV === "production" ? true : false;
+export const LIMIT_IP: boolean = process.env.ENABLE_IP_LIMIT ? true : false;
 export const PING_REQUEST_INTERVAL: number = 1000; // in ms
 export const JUMP_SPEED: number = -0.75;
 
