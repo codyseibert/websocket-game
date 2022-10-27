@@ -10,9 +10,7 @@ export function getCamera() {
   const { width, height } = getCanvasSize();
   const playerToFocus = getMyPlayer();
   return {
-    cx: playerToFocus ? getInterpolations()[playerToFocus.id].x - width / 2 : 0,
-    cy: playerToFocus
-      ? getInterpolations()[playerToFocus.id].y - height / 2
-      : 0,
+    cx: playerToFocus ? playerToFocus.x - width / 2 : 0,
+    cy: playerToFocus ? playerToFocus.y - height / 2 : 0,
   } as Camera;
 }

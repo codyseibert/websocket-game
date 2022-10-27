@@ -1,34 +1,43 @@
-export type CTR_UP = "up";
-export type CTR_DOWN = "down";
-export type CTR_LEFT = "left";
-export type CTR_RIGHT = "right";
-export type CTR_JUMP = "jump";
-export type CTR_USE = "use";
-export type CTR_ACTIONS =
-  | CTR_UP
-  | CTR_DOWN
-  | CTR_LEFT
-  | CTR_RIGHT
-  | CTR_JUMP
-  | CTR_USE;
+import { emitControls } from "./socket";
+
+export enum CTR_ACTIONS {
+  UP = "up",
+  DOWN = "down",
+  LEFT = "left",
+  RIGHT = "right",
+  JUMP = "jump",
+  USE = "use",
+}
+
 export type KeyMap = Record<string, CTR_ACTIONS>;
 
 let keyMap: KeyMap = {};
 export const defaultKeymap: KeyMap = {
-  w: "up",
-  s: "down",
-  a: "left",
-  d: "right",
-  e: "use",
-  " ": "jump",
+  w: CTR_ACTIONS.UP,
+  s: CTR_ACTIONS.DOWN,
+  a: CTR_ACTIONS.LEFT,
+  d: CTR_ACTIONS.RIGHT,
+  e: CTR_ACTIONS.USE,
+  " ": CTR_ACTIONS.JUMP,
+};
+
+export const activeControls = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+  use: false,
+  jump: false,
 };
 
 document.addEventListener("keydown", (e) => {
   activeControls[keyMap[e.key]] = true;
+  emitControls(activeControls);
 });
 
 document.addEventListener("keyup", (e) => {
   activeControls[keyMap[e.key]] = false;
+  emitControls(activeControls);
 });
 
 export function setKeymap(map: KeyMap) {
@@ -39,11 +48,6 @@ export function getKeymap(): KeyMap {
   return { ...keyMap };
 }
 
-export const activeControls = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-  use: false,
-  jump: false,
-};
+export function isCommandDown(command: CTR_ACTIONS) {
+  return !!activeControls[command];
+}

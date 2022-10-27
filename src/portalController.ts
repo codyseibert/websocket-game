@@ -20,6 +20,7 @@ export function handlePortalLogic(players: TPlayer[]) {
         isOverlap(getPlayerBoundingBox(player), getPortalBoundingBox(portal)) &&
         canTeleport[player.id]
       ) {
+        controls[CONTROLS.USE] = false;
         const otherPortals = portals.filter((p) => p !== portal);
         const randomPortal =
           otherPortals[Math.floor(Math.random() * otherPortals.length)];

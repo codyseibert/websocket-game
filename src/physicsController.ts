@@ -3,6 +3,7 @@ import {
   GRAVITY,
   JUMP_SPEED,
   PLAYER_SPEED,
+  TControlMap,
   TILE_SIZE,
   ZOMBIE_SPEED,
 } from "./constants";
@@ -14,7 +15,7 @@ import { turnZombie } from "./states/playingState";
 const canJump: Record<string, boolean> = {};
 
 function handlePlayerXMovement(player: TPlayer, delta: number) {
-  const playerControls = getControlsForPlayer(player.id) ?? {};
+  const playerControls = getControlsForPlayer(player.id);
   const speed = player.isZombie ? ZOMBIE_SPEED : PLAYER_SPEED;
 
   if (playerControls[CONTROLS.RIGHT]) {
@@ -47,11 +48,12 @@ function handlePlayerYMovement(player: TPlayer, delta: number) {
 }
 
 function handlePlayerJump(player: TPlayer) {
-  const playerControls = getControlsForPlayer(player.id) ?? {};
+  const playerControls: TControlMap = getControlsForPlayer(player.id);
 
   if (playerControls[CONTROLS.JUMP] && canJump[player.id]) {
     canJump[player.id] = false;
     player.vy = JUMP_SPEED;
+    playerControls[CONTROLS.JUMP] = false;
   }
 }
 

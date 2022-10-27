@@ -16,8 +16,6 @@ let lastRender = 0;
 let pingDelay = 0;
 
 function update(delta: number) {
-  emitControls(activeControls);
-
   if (pingDelay >= PING_REQUEST_INTERVAL) {
     emitRequestPingTime();
     pingDelay = 0;

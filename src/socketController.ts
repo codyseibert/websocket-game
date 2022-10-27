@@ -8,36 +8,56 @@ import {
 } from "./gameController";
 import { getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
-import { LIMIT_IP, GAME_LENGTH } from "./constants";
+import { CONTROLS, LIMIT_IP, MOCK_PING_DELAY, TControlMap } from "./constants";
 
 let io;
-const controlsMap = {};
+const controlsMap: Record<string, TControlMap> = {};
 const playerSocketMap = {};
 const ipSet = new Set<string>();
 const socketMap = {};
 
+function emitToSocket(channel, eventName, value) {
+  if (MOCK_PING_DELAY) {
+    setTimeout(() => {
+      channel.emit(eventName, value);
+    }, MOCK_PING_DELAY);
+  } else {
+    channel.emit(eventName, value);
+  }
+}
+
 export const getControlsForPlayer = (playerId: string) => {
-  return controlsMap[playerId] ?? {};
+  if (!controlsMap[playerId]) {
+    controlsMap[playerId] = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      use: false,
+      jump: false,
+    };
+  }
+  return controlsMap[playerId];
 };
 
 export const emitPlayers = (players: any) => {
-  io.emit("players", players);
+  emitToSocket(io, "players", players);
 };
 
 export const emitGameState = (gameState: GAME_STATE) => {
-  io.emit("gameState", gameState);
+  emitToSocket(io, "gameState", gameState);
 };
 
 export const emitMidGameTime = (time: number) => {
-  io.emit("waitingTime", time);
+  emitToSocket(io, "waitingTime", time);
 };
 
 export const emitWonMessage = (message: string) => {
-  io.emit("wonMessage", message);
+  emitToSocket(io, "wonMessage", message);
 };
 
 export const emitTimeLeft = (time: number) => {
-  io.emit("timeLeft", time);
+  emitToSocket(io, "timeLeft", time);
 };
 
 export const startSocketController = (server) => {
@@ -61,13 +81,13 @@ export const startSocketController = (server) => {
     }
     ipSet.add(ipAddress);
 
-    socket.emit("map", getGameMap());
-    socket.emit("gameState", getGameState());
-    // socket.emit("timeLeft", getTimeLeft());
+    emitToSocket(socket, "map", getGameMap());
+    emitToSocket(socket, "gameState", getGameState());
+    // emitToSocket(socket, "timeLeft", getTimeLeft());
     if (getGameState() === GAME_STATE.MidGame) {
-      socket.emit("waitingTime", getWaitingTime());
+      emitToSocket(socket, "waitingTime", getWaitingTime());
     }
-    socket.emit("wonMessage", getWhoWon());
+    emitToSocket(socket, "wonMessage", getWhoWon());
 
     const player = createPlayer(socket.id);
     playerSocketMap[socket.id] = player;
@@ -80,12 +100,23 @@ export const startSocketController = (server) => {
       removePlayer(socket.id);
     });
 
-    socket.on("controls", (controls) => {
-      controlsMap[socket.id] = controls;
+    socket.on("jump", () => {
+      const controlMap = getControlsForPlayer(socket.id);
+      controlMap[CONTROLS.JUMP] = true;
+    });
+
+    socket.on("use", () => {
+      const controlMap = getControlsForPlayer(socket.id);
+      controlMap[CONTROLS.USE] = true;
+    });
+
+    socket.on("controls", (controls: TControlMap) => {
+      const controlMap = getControlsForPlayer(socket.id);
+      Object.assign(getControlsForPlayer(socket.id), controls);
     });
 
     socket.on("requestPingTime", (dateMs) => {
-      socket.emit("ping", Date.now() - dateMs);
+      emitToSocket(socket, "ping", Date.now() - dateMs);
     });
   });
 };

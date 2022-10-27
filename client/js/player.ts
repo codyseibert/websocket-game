@@ -8,9 +8,13 @@ import bgUrl from "../images/bg.png";
 import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
 
-import { INTERPOLATION_SPEED, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
+import { PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 import { Camera } from "./camera";
+import { CTR_ACTIONS, isCommandDown } from "./controls";
+import { PLAYER_SPEED, ZOMBIE_SPEED } from "../../src/constants";
+
+const INTERPOLATION_DISTANCE = 0.8;
 
 const bgImage = new Image();
 bgImage.src = bgUrl;
@@ -33,104 +37,117 @@ zombieImageL.src = zombieLUrl;
 
 let players: TPlayer[] = [];
 
-const interpolations = {};
+const interpolations: Record<string, TPoint> = {};
 
 export function getInterpolations() {
   return interpolations;
 }
 
-function drawPlayer(
-  ctx: CanvasRenderingContext2D,
-  player: TPlayer,
-  facingLeftImage,
-  facingRightImage,
-  px: number,
-  py: number,
-  camera: Camera
-) {
-  ctx.drawImage(
-    player.facingRight ? facingRightImage : facingLeftImage,
-    0,
-    0,
-    PLAYER_WIDTH,
-    PLAYER_HEIGHT,
-    px - camera.cx,
-    py - camera.cy,
-    PLAYER_WIDTH,
-    PLAYER_HEIGHT
-  );
-}
+const drawPlayerFactory =
+  (ctx: CanvasRenderingContext2D, player: TPlayer, camera: Camera) =>
+  (leftImage, rightImage) => {
+    ctx.drawImage(
+      player.facingRight ? rightImage : leftImage,
+      0,
+      0,
+      PLAYER_WIDTH,
+      PLAYER_HEIGHT,
+      player.x - camera.cx,
+      player.y - camera.cy,
+      PLAYER_WIDTH,
+      PLAYER_HEIGHT
+    );
+  };
 
 export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
   for (let player of players) {
-    let { x: px, y: py } = interpolations[player.id];
+    const drawPlayer = drawPlayerFactory(ctx, player, camera);
 
     if (player.isZombie) {
-      drawPlayer(ctx, player, zombieImageL, zombieImageR, px, py, camera);
+      drawPlayer(zombieImageL, zombieImageR);
     } else {
       switch (player.health) {
         case 3:
-          drawPlayer(ctx, player, playerImageL, playerImageR, px, py, camera);
+          drawPlayer(playerImageL, playerImageR);
           break;
         case 2:
-          drawPlayer(
-            ctx,
-            player,
-            playerImageL_2,
-            playerImageR_2,
-            px,
-            py,
-            camera
-          );
+          drawPlayer(playerImageL_2, playerImageR_2);
           break;
         case 1:
-          drawPlayer(
-            ctx,
-            player,
-            playerImageL_1,
-            playerImageR_1,
-            px,
-            py,
-            camera
-          );
+          drawPlayer(playerImageL_1, playerImageR_1);
           break;
       }
     }
 
     ctx.fillStyle = player.isZombie ? "#00FF00" : "#0000ff";
     ctx.font = `16px Verdana`;
-    ctx.fillText(player.name, px - 10 - camera.cx, py - 10 - camera.cy);
+    ctx.fillText(
+      player.name,
+      player.x - 10 - camera.cx,
+      player.y - 10 - camera.cy
+    );
   }
 }
 
 export function updatePlayers(delta: number) {
+  // const myPlayer = getMyPlayer();
+
+  // if (myPlayer) {
+  //   const speed = myPlayer.isZombie ? ZOMBIE_SPEED : PLAYER_SPEED;
+
+  //   if (isCommandDown(CTR_ACTIONS.RIGHT)) {
+  //     console.log("moving right");
+  //     myPlayer.x += speed * delta;
+  //   }
+
+  //   if (isCommandDown(CTR_ACTIONS.LEFT)) {
+  //     console.log("moving LEFT");
+  //   }
+  // }
+
   for (let player of players) {
-    const interpolation = interpolations[player.id];
-    interpolation.x =
-      interpolation.x * (1 - interpolation.t) + interpolation.t * player.x;
-    interpolation.y =
-      interpolation.y * (1 - interpolation.t) + interpolation.t * player.y;
-    interpolation.t = Math.min(interpolation.t + interpolation.speed, 1);
+    const target = interpolations[player.id];
+    if (!target) continue;
+    const dx = (player.x - target.x) ** 2;
+    const dy = (player.y - target.y) ** 2;
+    const d = Math.sqrt(dx + dy);
+    const t = Math.min(1, d / INTERPOLATION_DISTANCE);
+    player.x = player.x * (1 - t) + t * target.x;
+    player.y = player.y * (1 - t) + t * target.y;
   }
 }
 
 export function setPlayers(newPlayers: TPlayer[]) {
-  players = newPlayers;
-  for (const player of players) {
-    if (!interpolations[player.id]) {
+  // someone new joined
+  for (const player of newPlayers) {
+    if (!players.find((p) => p.id === player.id)) {
+      players.push(player);
       interpolations[player.id] = {
-        t: 0,
         x: player.x,
         y: player.y,
-        speed: INTERPOLATION_SPEED,
       };
     }
-    interpolations[player.id].t = 0;
-    const dx = (player.x - interpolations[player.id].x) ** 2;
-    const dy = (player.y - interpolations[player.id].y) ** 2;
-    if (Math.sqrt(dx + dy) > 5) {
-      interpolations[player.id].t = 0.5;
+  }
+
+  // someone left
+  for (const player of players) {
+    const index = newPlayers.findIndex((p) => p.id === player.id);
+    const playerIndex = players.findIndex((p) => p.id === player.id);
+    if (index === -1) {
+      players.splice(playerIndex, 1);
+      delete interpolations[player.id];
     }
+  }
+
+  for (const player of newPlayers) {
+    const matchingPlayer = players.find((p) => p.id === player.id);
+    if (!matchingPlayer) continue;
+    const { x, y, ...props } = player;
+    Object.assign(matchingPlayer, props);
+    interpolations[player.id] = {
+      x: player.x,
+      y: player.y,
+    };
   }
 }
 

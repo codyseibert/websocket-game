@@ -1,5 +1,3 @@
-import { TPoint } from "./geom";
-
 const tmx = require("tmx-parser");
 const { TILE_SIZE } = require("./constants");
 

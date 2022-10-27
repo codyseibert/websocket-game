@@ -7,11 +7,6 @@ type TRectangle = {
   height: number;
 };
 
-export type TPoint = {
-  x: number;
-  y: number;
-};
-
 export const isOverlap = (rect1: TRectangle, rect2: TRectangle) => {
   return (
     rect1.x < rect2.x + rect2.width &&

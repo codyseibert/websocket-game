@@ -35,3 +35,8 @@ type TGameMap = {
     };
   };
 };
+
+type TPoint = {
+  x: number;
+  y: number;
+};

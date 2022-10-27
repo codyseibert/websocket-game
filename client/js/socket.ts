@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { MOCK_PING_DELAY } from "./constants";
 import { setGameState } from "./game";
 import {
   setPingTimeMs,
@@ -10,6 +11,17 @@ import { setMap } from "./map";
 import { setPlayers } from "./player";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
+
+const emit = (eventName: string, value: any) => {
+  if (MOCK_PING_DELAY) {
+    setTimeout(() => {
+      console.log("actually emit");
+      socket.emit(eventName, value);
+    }, MOCK_PING_DELAY);
+  } else {
+    socket.emit(eventName, value);
+  }
+};
 
 socket.on("map", (serverMap: TGameMap) => {
   setMap(serverMap);
@@ -44,9 +56,17 @@ export function getMyPlayerId() {
 }
 
 export function emitControls(activeControls) {
-  socket.emit("controls", activeControls);
+  emit("controls", { ...activeControls });
 }
 
 export function emitRequestPingTime() {
-  socket.emit("requestPingTime", Date.now());
+  emit("requestPingTime", Date.now());
+}
+
+export function emitJump() {
+  emit("jump", null);
+}
+
+export function emitUse() {
+  emit("use", null);
 }

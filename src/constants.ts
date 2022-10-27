@@ -8,6 +8,8 @@ export const ZOMBIE_SPEED: number = 0.4;
 export const END_GAME_SCORE: number = 10;
 export const COIN_SPAWN_RATE: number = 500;
 export const GAME_LENGTH: number = 30000;
+export const MOCK_PING_DELAY: number | null =
+  process.env.NODE_ENV === "production" ? null : 100;
 export const HIT_COOLDOWN: number = 650;
 export const PLAYERS_NEEDED: number = 2;
 export const MID_GAME_LENGTH: number = 5000;
@@ -17,7 +19,7 @@ export const PLAYER_WIDTH: number = 32;
 export const PLAYER_HEIGHT: number = 48;
 export const LIMIT_IP: boolean =
   process.env.NODE_ENV === "production" ? true : false;
-export const PING_REQUEST_INTERVAL:number = 5000; // in ms
+export const PING_REQUEST_INTERVAL: number = 5000; // in ms
 export const JUMP_SPEED: number = -29;
 
 export enum CONTROLS {
@@ -28,3 +30,12 @@ export enum CONTROLS {
   JUMP = "jump",
   USE = "use",
 }
+
+export type TControlMap = {
+  up: boolean;
+  down: boolean;
+  left: boolean;
+  right: boolean;
+  use: boolean;
+  jump: boolean;
+};
