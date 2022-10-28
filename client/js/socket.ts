@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
 import { MOCK_PING_DELAY } from "./constants";
+import { CTR_ACTIONS } from "./controls";
 import { setGameState } from "./game";
 import {
   setPingTimeMs,
@@ -8,9 +9,11 @@ import {
   setWonMessage,
 } from "./hud";
 import { setMap } from "./map";
-import { setPlayers } from "./player";
+import { refreshPlayersState } from "./player";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
+
+let myPlayerId: number | null = null;
 
 const emit = (eventName: string, value: any) => {
   if (MOCK_PING_DELAY) {
@@ -42,8 +45,12 @@ socket.on("wonMessage", (message: string) => {
   setWonMessage(message);
 });
 
-socket.on("players", (serverPlayers) => {
-  setPlayers(serverPlayers);
+socket.on("p", (serverPlayers) => {
+  refreshPlayersState(serverPlayers);
+});
+
+socket.on("id", (playerId: number) => {
+  myPlayerId = playerId;
 });
 
 socket.on("pong", (initialTime: number) => {
@@ -51,11 +58,26 @@ socket.on("pong", (initialTime: number) => {
 });
 
 export function getMyPlayerId() {
-  return socket.id;
+  return myPlayerId;
 }
 
 export function emitControls(activeControls) {
-  emit("controls", { ...activeControls });
+  const LEFT_BIT = 1 << 0;
+  const RIGHT_BIT = 1 << 1;
+  let controlByte = 0;
+  controlByte |= activeControls[CTR_ACTIONS.LEFT] ? LEFT_BIT : 0;
+  controlByte |= activeControls[CTR_ACTIONS.RIGHT] ? RIGHT_BIT : 0;
+  emit("c", controlByte);
+
+  if (activeControls[CTR_ACTIONS.JUMP]) {
+    emitJump();
+    activeControls[CTR_ACTIONS.JUMP] = false;
+  }
+
+  if (activeControls[CTR_ACTIONS.USE]) {
+    emitUse();
+    activeControls[CTR_ACTIONS.USE] = false;
+  }
 }
 
 export function emitRequestPingTime() {

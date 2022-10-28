@@ -8,6 +8,7 @@ import bgUrl from "../images/bg.png";
 import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
 
+import { pick } from "lodash";
 import { DRAW_HITBOX, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 import { Camera } from "./camera";
@@ -40,7 +41,7 @@ type TInterpolation = {
   t: number;
 };
 
-const interpolations: Record<string, TInterpolation> = {};
+const interpolations: Record<number, TInterpolation> = {};
 
 export function getInterpolations() {
   return interpolations;
@@ -105,21 +106,22 @@ export function updatePlayers(delta: number) {
   for (let player of players) {
     const target = interpolations[player.id];
     if (!target) continue;
-    const t = target.t / (1000 / TICK_RATE);
+    const t = Math.min(1, target.t / (1000 / TICK_RATE));
     player.x = player.x * (1 - t) + t * target.x;
     player.y = player.y * (1 - t) + t * target.y;
     target.t += delta;
   }
 }
 
-export function setPlayers(newPlayers: TPlayer[]) {
+export function refreshPlayersState(playerStateChanges: TPlayer[]) {
   // someone new joined
-  for (const player of newPlayers) {
+  for (const player of playerStateChanges) {
     if (!players.find((p) => p.id === player.id)) {
+      console.log("pushing player", player);
       players.push(player);
       interpolations[player.id] = {
-        x: player.x,
-        y: player.y,
+        x: player.x ?? 0,
+        y: player.y ?? 0,
         t: 0,
       };
     }
@@ -127,7 +129,7 @@ export function setPlayers(newPlayers: TPlayer[]) {
 
   // someone left
   for (const player of players) {
-    const index = newPlayers.findIndex((p) => p.id === player.id);
+    const index = playerStateChanges.findIndex((p) => p.id === player.id);
     const playerIndex = players.findIndex((p) => p.id === player.id);
     if (index === -1) {
       players.splice(playerIndex, 1);
@@ -136,13 +138,13 @@ export function setPlayers(newPlayers: TPlayer[]) {
   }
 
   // sync players with server state
-  for (const player of newPlayers) {
+  for (const player of playerStateChanges) {
     const matchingPlayer = players.find((p) => p.id === player.id);
     if (!matchingPlayer) continue;
-    const { x, y, ...props } = player;
+    const { id, x, y, ...props } = player;
     Object.assign(matchingPlayer, props);
-    interpolations[player.id].y = player.y;
-    interpolations[player.id].x = player.x;
+    if (y) interpolations[player.id].y = y;
+    if (x) interpolations[player.id].x = x;
     interpolations[player.id].t = 0;
   }
 }

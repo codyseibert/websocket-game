@@ -25,11 +25,11 @@ let gameState: GAME_STATE = GAME_STATE.WaitingForPlayers;
 let waitingTime = 0;
 let won = "";
 
-export const removePlayer = (id: string) => {
+export const removePlayer = (id: number) => {
   players = players.filter((player) => player.id !== id);
 };
 
-export function createPlayer(id: string) {
+export function createPlayer(id: number) {
   const player: TPlayer = {
     x: 100,
     y: 100,
@@ -98,9 +98,11 @@ const tick = (delta: number) => {
 loadMap("default");
 
 let lastUpdate = getProcessMs();
+let tickNumber = 0;
 setInterval(() => {
   const now = getProcessMs();
   const delta = now - lastUpdate;
   tick(delta);
   lastUpdate = now;
+  tickNumber++;
 }, 1000 / TICK_RATE);

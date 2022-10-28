@@ -9,12 +9,20 @@ import {
 import { getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
 import { CONTROLS, LIMIT_IP, MOCK_PING_DELAY, TControlMap } from "./constants";
+import { isEmpty, pickBy, identity } from "lodash";
 
 let io;
-const controlsMap: Record<string, TControlMap> = {};
+let nextPlayerId = 0;
+
+export function getNextPlayerId() {
+  return nextPlayerId++;
+}
+
+const controlsMap: Record<number, TControlMap> = {};
 const playerSocketMap = {};
 const ipSet = new Set<string>();
 const socketMap = {};
+const playerIdMap: Record<string, number> = {};
 
 function emitToSocket(channel, eventName, value) {
   if (MOCK_PING_DELAY) {
@@ -26,7 +34,7 @@ function emitToSocket(channel, eventName, value) {
   }
 }
 
-export const getControlsForPlayer = (playerId: string) => {
+export const getControlsForPlayer = (playerId: number) => {
   if (!controlsMap[playerId]) {
     controlsMap[playerId] = {
       up: false,
@@ -40,8 +48,42 @@ export const getControlsForPlayer = (playerId: string) => {
   return controlsMap[playerId];
 };
 
+let lastPlayerStates: any[] = [];
+
 export const emitPlayers = (players: any) => {
-  emitToSocket(io, "players", players);
+  const diffs: any[] = [];
+  for (let player of players) {
+    const lastPlayerState = lastPlayerStates.find((p) => p.id === player.id);
+    if (!lastPlayerState) {
+      diffs.push(player);
+    } else {
+      let diff = {
+        x: player.x !== lastPlayerState.x ? player.x : undefined,
+        y: player.y !== lastPlayerState.y ? player.y : undefined,
+        name: player.name !== lastPlayerState.name ? player.name : undefined,
+        isZombie:
+          player.isZombie !== lastPlayerState.isZombie
+            ? player.isZombie
+            : undefined,
+        facingRight:
+          player.facingRight !== lastPlayerState.facingRight
+            ? player.facingRight
+            : undefined,
+        health:
+          player.health !== lastPlayerState.health ? player.health : undefined,
+      };
+      diff = pickBy(diff, (value) => value !== undefined);
+
+      if (!isEmpty(diff)) {
+        (diff as any).id = player.id;
+        diffs.push(diff);
+      }
+    }
+  }
+  if (!isEmpty(diffs)) {
+    emitToSocket(io, "p", diffs);
+  }
+  lastPlayerStates = players.map((p) => ({ ...p }));
 };
 
 export const emitGameState = (gameState: GAME_STATE) => {
@@ -89,29 +131,41 @@ export const startSocketController = (server) => {
     }
     emitToSocket(socket, "wonMessage", getWhoWon());
 
-    const player = createPlayer(socket.id);
+    const newPlayerId = getNextPlayerId();
+    playerIdMap[socket.id] = newPlayerId;
+    const player = createPlayer(newPlayerId);
     playerSocketMap[socket.id] = player;
     socketMap[socket.id] = socket;
+
+    emitToSocket(socket, "id", newPlayerId);
 
     socket.on("disconnect", () => {
       console.log("a user disconnected");
       ipSet.delete(ipAddress);
+      const playerId = playerIdMap[socket.id];
       delete playerSocketMap[socket.id];
-      removePlayer(socket.id);
+      delete playerIdMap[socket.id];
+      removePlayer(playerId);
     });
 
     socket.on("jump", () => {
-      const controlMap = getControlsForPlayer(socket.id);
+      const controlMap = getControlsForPlayer(playerIdMap[socket.id]);
       controlMap[CONTROLS.JUMP] = true;
     });
 
     socket.on("use", () => {
-      const controlMap = getControlsForPlayer(socket.id);
+      const controlMap = getControlsForPlayer(playerIdMap[socket.id]);
       controlMap[CONTROLS.USE] = true;
     });
 
-    socket.on("controls", (controls: TControlMap) => {
-      Object.assign(getControlsForPlayer(socket.id), controls);
+    socket.on("c", (controls: number) => {
+      const LEFT_BIT = 1 << 0;
+      const RIGHT_BIT = 1 << 1;
+      const newControls = {
+        left: controls & LEFT_BIT,
+        right: controls & RIGHT_BIT,
+      };
+      Object.assign(getControlsForPlayer(playerIdMap[socket.id]), newControls);
     });
 
     socket.on("ping", (dateMs) => {

@@ -1,7 +1,7 @@
 declare module "*.png";
 
 type TPlayer = {
-  id: string;
+  id: number;
   x: number;
   y: number;
   score: number;
