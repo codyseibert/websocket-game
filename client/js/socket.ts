@@ -9,7 +9,7 @@ import {
   setWonMessage,
 } from "./hud";
 import { setMap } from "./map";
-import { refreshPlayersState, removePlayer } from "./player";
+import { clearPlayers, refreshPlayersState, removePlayer } from "./player";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 
@@ -30,7 +30,6 @@ socket.on("map", (serverMap: TGameMap) => {
 });
 
 socket.on("playerLeft", (playerId: number) => {
-  console.log("playerLeft", playerId);
   removePlayer(playerId);
 });
 
@@ -60,6 +59,10 @@ socket.on("id", (playerId: number) => {
 
 socket.on("pong", (initialTime: number) => {
   setPingTimeMs(Date.now() - initialTime);
+});
+
+socket.on("disconnect", () => {
+  clearPlayers();
 });
 
 export function getMyPlayerId() {
