@@ -48,6 +48,10 @@ export function createPlayer(id: number) {
   return player;
 }
 
+export function getPlayers() {
+  return players;
+}
+
 export const respawnPlayers = () => {
   for (const player of players) {
     const spawnPoint = player.isZombie ? getZombieSpawn() : getHumanSpawn();

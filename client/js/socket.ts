@@ -9,7 +9,7 @@ import {
   setWonMessage,
 } from "./hud";
 import { setMap } from "./map";
-import { refreshPlayersState } from "./player";
+import { refreshPlayersState, removePlayer } from "./player";
 
 const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 
@@ -27,6 +27,11 @@ const emit = (eventName: string, value: any) => {
 
 socket.on("map", (serverMap: TGameMap) => {
   setMap(serverMap);
+});
+
+socket.on("playerLeft", (playerId: number) => {
+  console.log("playerLeft", playerId);
+  removePlayer(playerId);
 });
 
 socket.on("gameState", (serverGameState) => {

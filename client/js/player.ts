@@ -8,7 +8,6 @@ import bgUrl from "../images/bg.png";
 import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
 
-import { pick } from "lodash";
 import { DRAW_HITBOX, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 import { Camera } from "./camera";
@@ -42,6 +41,14 @@ type TInterpolation = {
 };
 
 const interpolations: Record<number, TInterpolation> = {};
+
+export function removePlayer(playerId: number) {
+  const index = players.findIndex((p) => p.id === playerId);
+  if (index >= 0) {
+    players.splice(index, 1);
+    delete interpolations[playerId];
+  }
+}
 
 export function getInterpolations() {
   return interpolations;
@@ -124,16 +131,6 @@ export function refreshPlayersState(playerStateChanges: TPlayer[]) {
         y: player.y ?? 0,
         t: 0,
       };
-    }
-  }
-
-  // someone left
-  for (const player of players) {
-    const index = playerStateChanges.findIndex((p) => p.id === player.id);
-    const playerIndex = players.findIndex((p) => p.id === player.id);
-    if (index === -1) {
-      players.splice(playerIndex, 1);
-      delete interpolations[player.id];
     }
   }
 

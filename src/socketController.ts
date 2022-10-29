@@ -5,6 +5,7 @@ import {
   removePlayer,
   getWaitingTime,
   getWhoWon,
+  getPlayers,
 } from "./gameController";
 import { getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
@@ -138,6 +139,7 @@ export const startSocketController = (server) => {
     socketMap[socket.id] = socket;
 
     emitToSocket(socket, "id", newPlayerId);
+    emitToSocket(socket, "p", getPlayers());
 
     socket.on("disconnect", () => {
       console.log("a user disconnected");
@@ -146,6 +148,7 @@ export const startSocketController = (server) => {
       delete playerSocketMap[socket.id];
       delete playerIdMap[socket.id];
       removePlayer(playerId);
+      io.emit("playerLeft", playerId);
     });
 
     socket.on("jump", () => {
