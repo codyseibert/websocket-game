@@ -7,7 +7,9 @@ import playerL_1Url from "../images/playerL_1.png";
 import bgUrl from "../images/bg.png";
 import zombieRUrl from "../images/zombieR.png";
 import zombieLUrl from "../images/zombieL.png";
+import arrowUrl from "../images/arrow.png";
 
+import { drawImage } from "./canvas";
 import { DRAW_HITBOX, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 import { Camera } from "./camera";
@@ -31,6 +33,8 @@ const zombieImageR = new Image();
 zombieImageR.src = zombieRUrl;
 const zombieImageL = new Image();
 zombieImageL.src = zombieLUrl;
+const arrow = new Image();
+arrow.src = arrowUrl;
 
 let players: TPlayer[] = [];
 
@@ -83,6 +87,25 @@ export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
       );
     }
 
+    if (player.id == getMyPlayerId() && getMyPlayer().isZombie) {
+      let humans = players.filter(player => !player.isZombie);
+      for (let human of humans) {
+        let deltaX = human.x - getMyPlayer().x;
+        let deltaY = human.y - getMyPlayer().y;
+
+        console.log(Math.abs(deltaX));
+
+
+        // values VERY MUCH need tweaking, probably need to use something with the view width and height rather than these values
+        // also not even sure if I'm using the right check here.
+        if (Math.abs(deltaX) < 800 && Math.abs(deltaY) < 600) continue;
+
+        let deg = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+        drawImage(arrow, player.x - camera.cx - 0.5 * PLAYER_WIDTH, player.y - camera.cy + 0.5 * PLAYER_HEIGHT, 64, 12, deg);
+      }
+    }
+
     if (player.isZombie) {
       drawPlayer(zombieImageL, zombieImageR);
     } else {
@@ -124,7 +147,6 @@ export function refreshPlayersState(playerStateChanges: TPlayer[]) {
   // someone new joined
   for (const player of playerStateChanges) {
     if (!players.find((p) => p.id === player.id)) {
-      console.log("pushing player", player);
       players.push(player);
       interpolations[player.id] = {
         x: player.x ?? 0,

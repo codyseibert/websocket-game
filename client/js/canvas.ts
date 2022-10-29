@@ -13,4 +13,13 @@ export function getCanvasSize() {
   };
 }
 
+export function drawImage(image, x: number, y: number, w: number, h: number, degrees: number){
+  ctx.save();
+  ctx.translate(x+w/2, y+h/2);
+  ctx.rotate(degrees*Math.PI/180.0);
+  ctx.translate(-x-w/2, -y-h/2);
+  ctx.drawImage(image, x, y, w, h);
+  ctx.restore();
+}
+
 export const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
