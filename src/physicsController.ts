@@ -62,10 +62,10 @@ function handlePlayerJump(player: TPlayer) {
   const playerControls: TControlMap = getControlsForPlayer(player.id);
 
   if (playerControls[CONTROLS.JUMP] && canJump[player.id]) {
-    canJump[player.id] = false;
     player.vy = JUMP_SPEED;
-    playerControls[CONTROLS.JUMP] = false;
+    canJump[player.id] = false;
   }
+  playerControls[CONTROLS.JUMP] = false;
 }
 
 function handlePlayerFallToDeath(player: TPlayer) {
