@@ -8,6 +8,7 @@ import { getCamera } from "./camera";
 import { drawHud } from "./hud";
 import { emitControls, emitRequestPingTime } from "./socket";
 import { INTERPOLATION_RATE } from "./constants";
+import { drawMinimap } from "./minimap";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -27,6 +28,7 @@ function draw() {
   drawTiles(ctx, camera);
   drawPlayers(ctx, camera);
   drawHud(ctx);
+  drawMinimap(ctx);
 }
 
 function sendInputs() {

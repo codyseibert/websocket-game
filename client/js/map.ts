@@ -111,3 +111,7 @@ export function drawTiles(ctx: CanvasRenderingContext2D, camera: Camera) {
     }
   }
 }
+
+export function getTileMap() {
+  return map?.grid.tiles;
+}
