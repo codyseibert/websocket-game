@@ -142,9 +142,10 @@ export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
 
     ctx.fillStyle = player.isZombie ? "#00FF00" : "#0000ff";
     ctx.font = `16px Verdana`;
+    ctx.textAlign = "center";
     ctx.fillText(
       player.name,
-      player.x - 10 - camera.cx,
+      player.x + 15 - camera.cx,
       player.y - 10 - camera.cy
     );
   }

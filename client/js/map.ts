@@ -102,6 +102,7 @@ export function drawTiles(ctx: CanvasRenderingContext2D, camera: Camera) {
       if (tileType === PORTAL_ID) {
         ctx.fillStyle = "#ffffff";
         ctx.font = `16px Verdana`;
+        ctx.textAlign = "left";
         ctx.fillText(
           "Teleport (e)",
           Math.floor(col * TILE_SIZE - camera.cx + 20),
