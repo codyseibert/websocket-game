@@ -63,7 +63,7 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
     ctx.fillText(msg, hudOffsetX, 50);
   } else if (currentGameState === "MIDGAME") {
     let msg = "";
-    if (wonMessage) msg += wonMessage + " won!";
+    if (wonMessage) msg += wonMessage + " won! ";
     msg += `${waitingTime}s left.`;
     ctx.fillText(msg, hudOffsetX, 50);
   }
@@ -80,7 +80,7 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
   for (let i = 0; i < deathEvents.length; i++) {
     const deathEvent = deathEvents[i];
     ctx.fillText(
-      `${deathEvent.zombieName} ATE ${deathEvent.playerName}`,
+      `${deathEvent.zombieName} ate ${deathEvent.playerName}`,
       width - 10,
       i * 20 + 180
     );
