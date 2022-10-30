@@ -37,7 +37,9 @@ function handlePlayerXMovement(player: TPlayer, delta: number) {
 }
 
 function handlePlayerYMovement(player: TPlayer, delta: number) {
+
   const futureY = player.y + player.vy * delta;
+
   if (
     player.vy > 0 &&
     isCollidingWithMap({ ...player, y: futureY }, getCollidables())
@@ -53,6 +55,7 @@ function handlePlayerYMovement(player: TPlayer, delta: number) {
   ) {
     player.vy = 0.2;
   } else {
+    canJump[player.id] = false;
     player.y += player.vy * delta;
     player.vy += GRAVITY * delta;
   }

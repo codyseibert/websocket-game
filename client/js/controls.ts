@@ -11,12 +11,16 @@ export type KeyMap = Record<string, CTR_ACTIONS>;
 
 let keyMap: KeyMap = {};
 export const defaultKeymap: KeyMap = {
-  w: CTR_ACTIONS.UP,
+  w: CTR_ACTIONS.JUMP,
   s: CTR_ACTIONS.DOWN,
   a: CTR_ACTIONS.LEFT,
   d: CTR_ACTIONS.RIGHT,
   e: CTR_ACTIONS.USE,
   " ": CTR_ACTIONS.JUMP,
+  ArrowUp: CTR_ACTIONS.JUMP,
+  ArrowDown: CTR_ACTIONS.LEFT,
+  ArrowLeft: CTR_ACTIONS.LEFT,
+  ArrowRight: CTR_ACTIONS.RIGHT,
 };
 
 export const activeControls = {

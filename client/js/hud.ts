@@ -59,6 +59,18 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
     0
   );
 
+  const fillMixedText = (ctx: CanvasRenderingContext2D, args: any, x: number, y: number) => {
+    // ctx.textAlign = "right";
+    ctx.save();
+    args.forEach(({ text, fillStyle }) => {
+      ctx.fillStyle = fillStyle;
+      ctx.fillText(text, x, y);
+      x += ctx.measureText(text).width;
+    });
+    ctx.restore();
+  };
+  
+
   const hudOffsetX = 20;
 
   if (currentGameState === "PLAYING") {
@@ -80,20 +92,31 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
   }
 
   const { width, height } = getCanvasSize();
+
+  if (pingTimeMS > 100) {
+    if (pingTimeMS > 150) {
+      ctx.fillStyle = "#FF0000";
+    } else {
+      ctx.fillStyle = "#FFFF00";
+    }
+  } else {
+    ctx.fillStyle = "#00FF00";
+  }
+
   ctx.fillText(
-    `Ping: ${pingTimeMS !== -1 ? pingTimeMS + "ms" : "-"}`,
+    `${pingTimeMS !== -1 ? pingTimeMS + "ms" : "-"}`,
     20,
     height - 20
   );
 
   ctx.font = `16px Verdana`;
-  ctx.textAlign = "right";
   for (let i = 0; i < deathEvents.length; i++) {
     const deathEvent = deathEvents[i];
-    ctx.fillText(
-      `${deathEvent.zombieName} ate ${deathEvent.playerName}`,
-      width - 10,
-      i * 20 + 180
-    );
+    fillMixedText(ctx, [{ text: deathEvent.zombieName, fillStyle: "#00FF00"}, { text: " infected ", fillStyle: "#FF00FF"}, { text: deathEvent.playerName, fillStyle: "#FFFFFF"}], width - 220, i * -20 + height - 20)
+    // ctx.fillText(
+    //   `${deathEvent.zombieName} infected ${deathEvent.playerName}`,
+    //   width - 10,
+    //   i * 20 + 180
+    // );
   }
 }

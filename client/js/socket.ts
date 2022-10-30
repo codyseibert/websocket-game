@@ -84,12 +84,10 @@ export function emitControls(activeControls) {
 
   if (activeControls[CTR_ACTIONS.JUMP]) {
     emitJump();
-    activeControls[CTR_ACTIONS.JUMP] = false;
   }
 
   if (activeControls[CTR_ACTIONS.USE]) {
     emitUse();
-    activeControls[CTR_ACTIONS.USE] = false;
   }
 }
 
