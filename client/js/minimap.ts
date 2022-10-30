@@ -25,13 +25,17 @@ export function drawMinimap(ctx: CanvasRenderingContext2D) {
 
   ctx.fillStyle = "#000000";
   ctx.globalAlpha = 0.7;
-  ctx.fillRect(
+  ctx.rect(
     offsetX - 5,
     MINIMAP_OFFSET_Y - 5,
     MINIMAP_WIDTH + 10,
     MINIMAP_HEIGHT + 10
   );
+  ctx.fill();
   ctx.globalAlpha = 1.0;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "red";
+  ctx.stroke();
 
   for (let row = 0; row < tileMap.length; row++) {
     for (let col = 0; col < tileMap[row].length; col++) {
@@ -69,11 +73,13 @@ export function drawMinimap(ctx: CanvasRenderingContext2D) {
   for (let player of players) {
     ctx.fillStyle = player.isZombie ? "#00FF00" : "#FFFFFF";
 
-    ctx.fillRect(
+    console.log(player.x)
+
+    if (player.y < 2600 && player.x > -110 && player.x < 3900) ctx.fillRect(
       player.x * MINIMAP_RATIO_X + offsetX,
       player.y * MINIMAP_RATIO_Y + MINIMAP_OFFSET_Y,
       PLAYER_WIDTH * MINIMAP_RATIO_X * 1.5,
       PLAYER_HEIGHT * MINIMAP_RATIO_Y * 1.5
-    );
+    )
   }
 }

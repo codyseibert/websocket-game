@@ -2,6 +2,15 @@ import { getCanvasSize } from "./canvas";
 import { getGameState } from "./game";
 import { getPlayers } from "./player";
 
+import zombieUrl from "../images/zombieR.png";
+import humanUrl from "../images/playerR.png";
+
+const humanImage = new Image();
+const zombieImage = new Image();
+
+humanImage.src = humanUrl;
+zombieImage.src = zombieUrl;
+
 let timeLeft: number = 0;
 let wonMessage = "";
 let waitingTime = 0;
@@ -54,8 +63,10 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
 
   if (currentGameState === "PLAYING") {
     ctx.fillText(`Time left: ${new Date(timeLeft * 1000).toISOString().substring(14, 19)}`, hudOffsetX, 50);
-    ctx.fillText(`Humans Remaining: ${humansRemaining}`, hudOffsetX, 80);
-    ctx.fillText(`Total Zombies: ${totalZombies}`, hudOffsetX, 110);
+    ctx.drawImage(humanImage, hudOffsetX, 55, 20, 30);
+    ctx.fillText(` : ${humansRemaining}`, hudOffsetX + 10, 80);
+    ctx.drawImage(zombieImage, hudOffsetX, 85, 20, 30);
+    ctx.fillText(` : ${totalZombies}`, hudOffsetX + 10, 110);
   } else if (currentGameState === "WAITING_FOR_PLAYERS") {
     let msg = "";
     if (wonMessage) msg += wonMessage + " won! ";
