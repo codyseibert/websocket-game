@@ -72,6 +72,7 @@ function handlePlayerFallToDeath(player: TPlayer) {
   if (player.y > getGameMap().grid.tiles.length * TILE_SIZE * 2) {
     player.x = 100;
     player.y = 100;
+    player.vx = 0;
     player.vy = 0;
     if (!player.isZombie) {
       turnZombie(player);
