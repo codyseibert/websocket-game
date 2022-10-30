@@ -140,8 +140,8 @@ export const loadMap = async (mapName) => {
 };
 
 const ZOMBIE_SPAWN: TPoint = {
-  x: 100,
-  y: 100,
+  x: 3055,
+  y: 200,
 };
 
 const HUMAN_SPAWN: TPoint = {

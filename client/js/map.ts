@@ -13,7 +13,7 @@ mapImage.src = tilesheetUrl;
 const decalImage = new Image();
 decalImage.src = decalsUrl;
 
-const PORTAL_ID = 32;
+export const PORTAL_ID = 32;
 
 export function setMap(newMap: TGameMap) {
   map = newMap;
@@ -114,4 +114,8 @@ export function drawTiles(ctx: CanvasRenderingContext2D, camera: Camera) {
 
 export function getTileMap() {
   return map?.grid.tiles;
+}
+
+export function getDecalMap() {
+  return map?.decals.tiles;
 }
