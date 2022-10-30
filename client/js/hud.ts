@@ -2,7 +2,7 @@ import { getCanvasSize } from "./canvas";
 import { getGameState } from "./game";
 import { getPlayers } from "./player";
 
-let timeLeft = "";
+let timeLeft: number = "";
 let wonMessage = "";
 let waitingTime = 0;
 let pingTimeMS = -1;
@@ -53,7 +53,7 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
   const hudOffsetX = 20;
 
   if (currentGameState === "PLAYING") {
-    ctx.fillText(`Time left: ${timeLeft}`, hudOffsetX, 50);
+    ctx.fillText(`Time left: ${new Date(timeLeft * 1000).toISOString().substring(14, 19)}`, hudOffsetX, 50);
     ctx.fillText(`Humans Remaining: ${humansRemaining}`, hudOffsetX, 80);
     ctx.fillText(`Total Zombies: ${totalZombies}`, hudOffsetX, 110);
   } else if (currentGameState === "WAITING_FOR_PLAYERS") {
