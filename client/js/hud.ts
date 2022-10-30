@@ -5,11 +5,18 @@ import { getPlayers } from "./player";
 import zombieUrl from "../images/zombieR.png";
 import humanUrl from "../images/playerR.png";
 
+import headUrl from "../images/head.png";
+
 const humanImage = new Image();
 const zombieImage = new Image();
 
 humanImage.src = humanUrl;
 zombieImage.src = zombieUrl;
+
+
+const headImage = new Image();
+
+headImage.src = headUrl;
 
 let timeLeft: number = 0;
 let wonMessage = "";
@@ -58,17 +65,6 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
     (acc, player) => acc + (player.isZombie ? 1 : 0),
     0
   );
-
-  const fillMixedText = (ctx: CanvasRenderingContext2D, args: any, x: number, y: number) => {
-    // ctx.textAlign = "right";
-    ctx.save();
-    args.forEach(({ text, fillStyle }) => {
-      ctx.fillStyle = fillStyle;
-      ctx.fillText(text, x, y);
-      x += ctx.measureText(text).width;
-    });
-    ctx.restore();
-  };
   
 
   const hudOffsetX = 20;
@@ -112,11 +108,16 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
   ctx.font = `16px Verdana`;
   for (let i = 0; i < deathEvents.length; i++) {
     const deathEvent = deathEvents[i];
-    fillMixedText(ctx, [{ text: deathEvent.zombieName, fillStyle: "#00FF00"}, { text: " infected ", fillStyle: "#FF00FF"}, { text: deathEvent.playerName, fillStyle: "#FFFFFF"}], width - 220, i * -20 + height - 20)
-    // ctx.fillText(
-    //   `${deathEvent.zombieName} infected ${deathEvent.playerName}`,
-    //   width - 10,
-    //   i * 20 + 180
-    // );
+    // fillMixedText(ctx, [{ text: deathEvent.zombieName, fillStyle: "#00FF00"}, { text: " infected ", fillStyle: "#FF00FF"}, { text: deathEvent.playerName, fillStyle: "#FFFFFF"}], width - 220, i * -20 + height - 20)
+    
+    ctx.textAlign = "right";
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText(`${deathEvent.playerName}`, width - 20, i * -20 + height - 20);
+
+    ctx.drawImage(headImage, width - ctx.measureText(`${deathEvent.playerName}`).width - 50, i * -20 + height - 37, 23, 23);
+
+    ctx.fillStyle = "#00FF00";
+    ctx.fillText(`${deathEvent.zombieName}`, width - ctx.measureText(`${deathEvent.playerName}`).width - 60, i * -20 + height - 20);
   }
 }
