@@ -91,6 +91,10 @@ export const emitGameState = (gameState: GAME_STATE) => {
   emitToSocket(io, "gameState", gameState);
 };
 
+export const emitDeath = (zombieName, playerName) => {
+  emitToSocket(io, "death", { zombieName, playerName });
+};
+
 export const emitMidGameTime = (time: number) => {
   emitToSocket(io, "waitingTime", time);
 };

@@ -7,6 +7,7 @@ import {
   setTimeLeft,
   setWaitingTime,
   setWonMessage,
+  trackDeath,
 } from "./hud";
 import { setMap } from "./map";
 import { clearPlayers, refreshPlayersState, removePlayer } from "./player";
@@ -27,6 +28,10 @@ const emit = (eventName: string, value: any) => {
 
 socket.on("map", (serverMap: TGameMap) => {
   setMap(serverMap);
+});
+
+socket.on("death", (deathEvent) => {
+  trackDeath(deathEvent);
 });
 
 socket.on("playerLeft", (playerId: number) => {

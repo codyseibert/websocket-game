@@ -12,7 +12,7 @@ import {
   Teams,
 } from "../gameController";
 import { getPlayerBoundingBox, isOverlap } from "../geom";
-import { emitTimeLeft } from "../socketController";
+import { emitDeath, emitTimeLeft } from "../socketController";
 import { goToMidGameState } from "./midGameState";
 import { gotoWaitingState } from "./waitingState";
 import { performance } from "perf_hooks";
@@ -54,7 +54,7 @@ const pickZombie = (players) => {
   turnZombie(zombie);
 };
 
-export function handlePlayingState(players) {
+export function handlePlayingState(players: TPlayer[]) {
   const noMoreZombies = players.every((player) => !player.isZombie);
   const noMoreHumans = players.every((player) => player.isZombie);
 
@@ -75,7 +75,10 @@ export function handlePlayingState(players) {
         if (performance.now() - human.lastHit > HIT_COOLDOWN) {
           human.health--;
           human.lastHit = performance.now();
-          if (!human.health) turnZombie(human);
+          if (!human.health) {
+            turnZombie(human);
+            emitDeath(zombie.name, human.name);
+          }
         }
       }
     }
