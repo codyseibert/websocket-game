@@ -2,7 +2,7 @@ import { getCanvasSize } from "./canvas";
 import { getGameState } from "./game";
 import { getPlayers } from "./player";
 
-let timeLeft: number = "";
+let timeLeft: number = 0;
 let wonMessage = "";
 let waitingTime = 0;
 let pingTimeMS = -1;
