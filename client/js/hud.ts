@@ -63,7 +63,7 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
     ctx.fillText(msg, hudOffsetX, 50);
   } else if (currentGameState === "MIDGAME") {
     let msg = "";
-    if (wonMessage) msg += wonMessage + " won! ";
+    if (wonMessage) msg += wonMessage + " won!";
     msg += `${waitingTime}s left.`;
     ctx.fillText(msg, hudOffsetX, 50);
   }
