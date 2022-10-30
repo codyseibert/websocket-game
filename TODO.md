@@ -1,4 +1,7 @@
 - mini map
+- running animation on the players
+- show list of survivors if they survive the round
+  - give them points or something
 - leaderboard
   - total survival time
   - brains eaten
@@ -16,3 +19,8 @@
 ## Maybe
 
 - weapons for human
+
+## BUGS
+
+- ​bug: if you fall to death with -X velocity, you spawn with same velocity and keep falling to death. suggestion: set X velocity to 0 on death
+- minimap follow the player
