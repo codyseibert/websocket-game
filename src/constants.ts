@@ -7,7 +7,7 @@ export const PLAYER_SPEED: number = 0.5;
 export const ZOMBIE_SPEED: number = 0.4;
 export const END_GAME_SCORE: number = 10;
 export const COIN_SPAWN_RATE: number = 500;
-export const GAME_LENGTH: number = 1000 * 30 * 0.5; // 1 min 30 seconds
+export const GAME_LENGTH: number = 1000 * 30 * 3; // 1 min 30 seconds
 export const MOCK_PING_DELAY: number | null = process.env.MOCK_PING_DELAY
   ? parseInt(process.env.MOCK_PING_DELAY)
   : null;
