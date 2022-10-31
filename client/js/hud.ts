@@ -99,29 +99,34 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
 
   if (currentGameState === "PLAYING") {
     ctx.fillText(`Time left: ${new Date(timeLeft * 1000).toISOString().substring(14, 19)}`, hudOffsetX, 50);
-    ctx.drawImage(humanImage, hudOffsetX, 55, 20, 30);
-    ctx.fillText(` : ${humansRemaining}`, hudOffsetX + 10, 80);
-    ctx.drawImage(zombieImage, hudOffsetX, 85, 20, 30);
-    ctx.fillText(` : ${totalZombies}`, hudOffsetX + 10, 110);
+    ctx.drawImage(humanImage, hudOffsetX, 75, 20, 30);
+    ctx.fillText(` : ${humansRemaining}`, hudOffsetX + 10, 100);
+    ctx.drawImage(zombieImage, hudOffsetX, 110, 20, 30);
+    ctx.fillText(` : ${totalZombies}`, hudOffsetX + 10, 135);
   } else if (currentGameState === "WAITING_FOR_PLAYERS") {
     let msg = "";
-    if (wonMessage) msg += wonMessage + " won! ";
-    msg += "waiting for players";
+    if (wonMessage) msg += `${wonMessage.toLowerCase().charAt(0).toUpperCase() + wonMessage.toLowerCase().slice(1)} won!`;
+    msg += " waiting for players...";
     ctx.fillText(msg, hudOffsetX, 50);
   } else if (currentGameState === "MIDGAME") {
-    let msg = "";
-    if (wonMessage) msg += wonMessage + " won! ";
-    msg += `${waitingTime}s left.`;
-    ctx.fillText(msg, hudOffsetX, 50);
+    ctx.fillText(`${waitingTime}s left.`, hudOffsetX, 50);
 
     ctx.globalAlpha = 0.75;
     ctx.fillStyle = "#000000";
     ctx.fillRect(width / 4, height / 6, width / 2, height / 1.5);
     ctx.globalAlpha = 1;
-
-    ctx.drawImage(humanImage, width / 4 + 30, height / 6 + height / 1.5 / 2, 24, 36);
-    ctx.drawImage(zombieImage, width / 4 + 30, height / 6 + 36, 24, 36);
+    
     ctx.fillStyle = "#FFFFFF";
+    ctx.textAlign = "center";
+    ctx.font = "30px Verdana";
+    if (wonMessage === "ZOMBIES") ctx.fillStyle = "#00FF00";
+    ctx.fillText(`${wonMessage.toLowerCase().charAt(0).toUpperCase() + wonMessage.toLowerCase().slice(1)} won!`, width / 2, height / 6 + 55);
+    ctx.textAlign = "left";
+    ctx.font = "24px Verdana";
+    ctx.fillStyle = "#FFFFFF";
+
+    ctx.drawImage(humanImage, width / 4 + 30, height / 6 + height / 1.5 / 2 + 40, 24, 36);
+    ctx.drawImage(zombieImage, width / 4 + 30, height / 6 + 76, 24, 36);
 
     zombieKills = getZombieKills();
     humansSurvived = getHumansSurvived();
@@ -136,9 +141,9 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
       finalKills.push(`${zombie.name}: ${zombie.kills}`);
     }
 
-    lineWrap(ctx, `kills (${finalKills.length}): ${finalKills.join(", ")}`, width / 2 - 100, width / 4 + 65, height / 6 + 62, 35);
+    lineWrap(ctx, `kills (${finalKills.length}): ${finalKills.join(", ")}`, width / 2 - 100, width / 4 + 65, height / 6 + 102, 35);
 
-    lineWrap(ctx, `survived (${humansSurvived.length}): ${humansSurvived.join(", ")}`, width / 2 - 100, width / 4 + 65, height / 6 + height / 1.5 / 2 + 24, 35);
+    lineWrap(ctx, `survived (${humansSurvived.length}): ${humansSurvived.join(", ")}`, width / 2 - 100, width / 4 + 65, height / 6 + height / 1.5 / 2 + 64, 35);
   }
 
   if (pingTimeMS > 100) {
