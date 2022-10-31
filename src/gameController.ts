@@ -3,10 +3,10 @@ import random from "random-name";
 import { getHumanSpawn, getZombieSpawn, loadMap } from "./mapController";
 import { emitPlayers, emitGameState } from "./socketController";
 import { handleWaitingState } from "./states/waitingState";
-import { handlePlayingState } from "./states/playingState";
+import { handlePlayingState, won } from "./states/playingState";
 import { handleGamePhysics } from "./physicsController";
 import { handleMidGameState } from "./states/midGameState";
-import { handlePortalLogic } from "./portalController";
+import { handlePortalLogic } from "./portalController"; 
 
 export let players: TPlayer[] = [];
 
@@ -23,7 +23,6 @@ export enum Teams {
 
 let gameState: GAME_STATE = GAME_STATE.WaitingForPlayers;
 let waitingTime = 0;
-let won = "";
 
 export const removePlayer = (id: number) => {
   players = players.filter((player) => player.id !== id);

@@ -4,6 +4,7 @@ import {
   PLAYERS_NEEDED,
   ZOMBIE_COLOR,
   HIT_COOLDOWN,
+  ZOMBIE_SPEED,
 } from "../constants";
 import {
   GAME_STATE,
@@ -12,7 +13,7 @@ import {
   Teams,
 } from "../gameController";
 import { getPlayerBoundingBox, isOverlap } from "../geom";
-import { emitDeath, emitTimeLeft } from "../socketController";
+import { emitDeath, emitTimeLeft, emitHumansSurvived, emitZombieKillMap } from "../socketController";
 import { goToMidGameState } from "./midGameState";
 import { gotoWaitingState } from "./waitingState";
 import { performance } from "perf_hooks";
@@ -21,7 +22,18 @@ let gameStartTime: number;
 let timeLeft: number;
 let timeLeftInterval: NodeJS.Timeout;
 
+export let won: string;
+
+export let zombieKillMap: { name: string, kills: number }[] = [];
+
+export let humansSurvived: string[] = [];
+
+export const removeZombie = (name: string) => {
+  zombieKillMap = zombieKillMap.filter(z => !(z.name == name));
+}
+
 export const startGame = (players: TPlayer[]) => {
+  zombieKillMap = [];
   timeLeft = GAME_LENGTH / 1000;
   emitTimeLeft(timeLeft);
   players.forEach(turnHuman);
@@ -33,7 +45,6 @@ export const startGame = (players: TPlayer[]) => {
     timeLeft--;
     emitTimeLeft(timeLeft);
   };
-
   timeLeftInterval = setInterval(setTimeLeft, 1000);
 };
 
@@ -47,9 +58,10 @@ export const turnHuman = (player) => {
 export const turnZombie = (player) => {
   player.color = ZOMBIE_COLOR;
   player.isZombie = true;
+  zombieKillMap.push({ name: player.name, kills: 0 });
 };
 
-const pickZombie = (players) => {
+const pickZombie = (players: TPlayer[]) => {
   const zombie = players[Math.floor(Math.random() * players.length)];
   turnZombie(zombie);
 };
@@ -59,8 +71,16 @@ export function handlePlayingState(players: TPlayer[]) {
   const noMoreHumans = players.every((player) => player.isZombie);
 
   if (noMoreZombies || timeLeft <= 0) {
+    humansSurvived = [];
+
+    players.forEach(player => { if (!player.isZombie) humansSurvived.push(player.name) });
+
+    emitZombieKillMap(zombieKillMap);
+    emitHumansSurvived(humansSurvived);
     endGame(Teams.Humans, players);
   } else if (noMoreHumans) {
+    emitZombieKillMap(zombieKillMap);
+    emitHumansSurvived(humansSurvived);
     endGame(Teams.Zombies, players);
   }
 
@@ -78,6 +98,8 @@ export function handlePlayingState(players: TPlayer[]) {
           if (!human.health) {
             turnZombie(human);
             emitDeath(zombie.name, human.name);
+            let name: string;
+            zombieKillMap.forEach(z => { if (z.name == zombie.name) { name = zombie.name; z.kills++ } });
           }
         }
       }
@@ -85,12 +107,13 @@ export function handlePlayingState(players: TPlayer[]) {
   }
 }
 
-export function endGame(won: Teams, players) {
+export function endGame(teamWon: Teams, players) {
   clearInterval(timeLeftInterval);
   emitTimeLeft(0);
   if (players.length >= PLAYERS_NEEDED) {
-    goToMidGameState(won, players);
+    goToMidGameState(teamWon, players);
   } else {
-    gotoWaitingState(won, players);
+    gotoWaitingState(teamWon, players);
   }
+  won = teamWon;
 }

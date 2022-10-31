@@ -1,6 +1,8 @@
 import { getCanvasSize } from "./canvas";
 import { getGameState } from "./game";
 import { getPlayers } from "./player";
+import { getZombieKills } from "./socket";
+import { getHumansSurvived } from "./socket";
 
 import zombieUrl from "../images/zombieR.png";
 import humanUrl from "../images/playerR.png";
@@ -13,6 +15,9 @@ const zombieImage = new Image();
 humanImage.src = humanUrl;
 zombieImage.src = zombieUrl;
 
+let humansSurvived: string[] = [];
+
+let zombieKills: { name: string, kills: number }[] = [];
 
 const headImage = new Image();
 
@@ -49,8 +54,32 @@ export function setPingTimeMs(time: number) {
   pingTimeMS = time;
 }
 
+function lineWrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, x: number, y: number, lineHeight: number) {
+  let words = text.split(" ");
+  let lines: string[] = [];
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+      let word = words[i];
+      let width = ctx.measureText(currentLine + " " + word).width;
+      if (width < maxWidth) {
+          currentLine += " " + word;
+      } else {
+          lines.push(currentLine);
+          currentLine = word;
+      }
+  }
+  lines.push(currentLine);
+  
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillText(lines[i], x, y + i * lineHeight);
+  }
+}
+
 export function drawHud(ctx: CanvasRenderingContext2D) {
   const currentGameState = getGameState();
+
+  const { width, height } = getCanvasSize();
 
   ctx.fillStyle = "#FFFFFF";
   ctx.font = `24px Verdana`;
@@ -65,7 +94,6 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
     (acc, player) => acc + (player.isZombie ? 1 : 0),
     0
   );
-  
 
   const hudOffsetX = 20;
 
@@ -85,9 +113,33 @@ export function drawHud(ctx: CanvasRenderingContext2D) {
     if (wonMessage) msg += wonMessage + " won! ";
     msg += `${waitingTime}s left.`;
     ctx.fillText(msg, hudOffsetX, 50);
-  }
 
-  const { width, height } = getCanvasSize();
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(width / 4, height / 6, width / 2, height / 1.5);
+    ctx.globalAlpha = 1;
+
+    ctx.drawImage(humanImage, width / 4 + 30, height / 6 + height / 1.5 / 2, 24, 36);
+    ctx.drawImage(zombieImage, width / 4 + 30, height / 6 + 36, 24, 36);
+    ctx.fillStyle = "#FFFFFF";
+
+    zombieKills = getZombieKills();
+    humansSurvived = getHumansSurvived();
+
+    zombieKills.sort((a, b) => {
+      return b.kills - a.kills;
+    })
+
+    let finalKills: string[] = [];
+
+    for (const zombie of zombieKills) {
+      finalKills.push(`${zombie.name}: ${zombie.kills}`);
+    }
+
+    lineWrap(ctx, `kills (${finalKills.length}): ${finalKills.join(", ")}`, width / 2 - 100, width / 4 + 65, height / 6 + 62, 35);
+
+    lineWrap(ctx, `survived (${humansSurvived.length}): ${humansSurvived.join(", ")}`, width / 2 - 100, width / 4 + 65, height / 6 + height / 1.5 / 2 + 24, 35);
+  }
 
   if (pingTimeMS > 100) {
     if (pingTimeMS > 150) {
