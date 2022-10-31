@@ -71,15 +71,14 @@ export function handlePlayingState(players: TPlayer[]) {
   const noMoreHumans = players.every((player) => player.isZombie);
 
   if (noMoreZombies || timeLeft <= 0) {
-    humansSurvived = [];
-
-    players.forEach(player => { if (!player.isZombie) humansSurvived.push(player.name) });
-
     emitZombieKillMap(zombieKillMap);
+    humansSurvived = [];
+    players.forEach(player => { if (!player.isZombie) humansSurvived.push(player.name) });
     emitHumansSurvived(humansSurvived);
     endGame(Teams.Humans, players);
   } else if (noMoreHumans) {
     emitZombieKillMap(zombieKillMap);
+    humansSurvived = [];
     emitHumansSurvived(humansSurvived);
     endGame(Teams.Zombies, players);
   }
