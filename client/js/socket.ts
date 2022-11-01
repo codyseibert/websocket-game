@@ -105,13 +105,19 @@ export function getMyPlayerId() {
   return myPlayerId;
 }
 
+let lastSentControls = 0;
+
 export function emitControls(activeControls) {
   const LEFT_BIT = 1 << 0;
   const RIGHT_BIT = 1 << 1;
   let controlByte = 0;
   controlByte |= activeControls[CTR_ACTIONS.LEFT] ? LEFT_BIT : 0;
   controlByte |= activeControls[CTR_ACTIONS.RIGHT] ? RIGHT_BIT : 0;
-  emit("c", controlByte);
+
+  if (controlByte !== lastSentControls) {
+    emit("c", controlByte);
+    lastSentControls = controlByte;
+  }
 
   if (activeControls[CTR_ACTIONS.JUMP]) {
     emitJump();

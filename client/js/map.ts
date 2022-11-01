@@ -3,6 +3,7 @@ import decalsUrl from "../images/decals.png";
 import bgUrl from "../images/bg.png";
 import { TILE_SIZE } from "./constants";
 import { Camera } from "./camera";
+import { createMinimap } from "./minimap";
 
 let map: TGameMap | null = null;
 
@@ -17,6 +18,7 @@ export const PORTAL_ID = 32;
 
 export function setMap(newMap: TGameMap) {
   map = newMap;
+  createMinimap();
 }
 
 function getTileImageLocation(id: number, metadata: any) {
