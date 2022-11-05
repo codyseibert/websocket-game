@@ -14,6 +14,7 @@ import { DRAW_HITBOX, PLAYER_HEIGHT, PLAYER_WIDTH } from "./constants";
 import { getMyPlayerId } from "./socket";
 import { Camera } from "./camera";
 import { TICK_RATE } from "../../src/constants";
+import { EDictionary } from "../../src/EDictionary";
 
 const bgImage = new Image();
 bgImage.src = bgUrl;
@@ -36,7 +37,7 @@ zombieImageL.src = zombieLUrl;
 const arrow = new Image();
 arrow.src = arrowUrl;
 
-let players: TPlayer[] = [];
+let players: EDictionary<number, TPlayer> = new EDictionary()
 
 type TInterpolation = {
   x: number;
@@ -47,15 +48,11 @@ type TInterpolation = {
 const interpolations: Record<number, TInterpolation> = {};
 
 export function removePlayer(playerId: number) {
-  const index = players.findIndex((p) => p.id === playerId);
-  if (index >= 0) {
-    players.splice(index, 1);
-    delete interpolations[playerId];
-  }
+  players.delete(playerId);
 }
 
 export function clearPlayers() {
-  players.length = 0;
+  players.clear();
 }
 
 export function getInterpolations() {
@@ -84,7 +81,7 @@ function drawArrows(player: TPlayer, camera: Camera) {
   if (!myPlayer.isZombie) return;
   if (player.id !== getMyPlayerId()) return;
 
-  let humans = players.filter((player) => !player.isZombie);
+  let humans = players.getList().filter((player) => !player.isZombie);
 
   const canvasSize = getCanvasSize();
 
@@ -110,7 +107,10 @@ function drawArrows(player: TPlayer, camera: Camera) {
 }
 
 export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
-  for (let player of players) {
+  const playerList = players.getList();
+  for (let i = 0; i < playerList.length; i++) {
+
+    const player = playerList[i];
     const drawPlayer = drawPlayerFactory(ctx, player, camera);
 
     if (DRAW_HITBOX) {
@@ -152,7 +152,9 @@ export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
 }
 
 export function updatePlayers(delta: number) {
-  for (let player of players) {
+  const playerList = players.getList()
+  for (let i = 0; i < playerList.length; i++) {
+    const player = playerList[i]
     const target = interpolations[player.id];
     if (!target) continue;
     const t = Math.min(1, target.t / (1000 / TICK_RATE));
@@ -165,8 +167,8 @@ export function updatePlayers(delta: number) {
 export function refreshPlayersState(playerStateChanges: TPlayer[]) {
   // someone new joined
   for (const player of playerStateChanges) {
-    if (!players.find((p) => p.id === player.id)) {
-      players.push(player);
+    if (!players.has(player.id)) {
+      players.set(player.id, player);
       interpolations[player.id] = {
         x: player.x ?? 0,
         y: player.y ?? 0,
@@ -177,7 +179,7 @@ export function refreshPlayersState(playerStateChanges: TPlayer[]) {
 
   // sync players with server state
   for (const player of playerStateChanges) {
-    const matchingPlayer = players.find((p) => p.id === player.id);
+    const matchingPlayer = players.get(player.id)
     if (!matchingPlayer) continue;
     const { id, x, y, ...props } = player;
     Object.assign(matchingPlayer, props);
@@ -188,9 +190,10 @@ export function refreshPlayersState(playerStateChanges: TPlayer[]) {
 }
 
 export function getMyPlayer() {
-  return players.find((player) => player.id === getMyPlayerId());
+  // here EDictionary expects a number, this is quick fix (as number) but please fix here
+  return players.get(getMyPlayerId() as number);
 }
 
 export function getPlayers() {
-  return players;
+  return players.getList();
 }
