@@ -11,6 +11,7 @@ import { getGameMap } from "./mapController";
 import { Server, Socket } from "socket.io";
 import { CONTROLS, LIMIT_IP, MOCK_PING_DELAY, TControlMap } from "./constants";
 import { isEmpty, pickBy, identity } from "lodash";
+import { zombieKillMap, removeZombie } from "./states/playingState";
 
 let io;
 let nextPlayerId = 0;
@@ -107,6 +108,14 @@ export const emitTimeLeft = (time: number) => {
   emitToSocket(io, "timeLeft", time);
 };
 
+export const emitHumansSurvived = (humans: string[]) => {
+  emitToSocket(io, "humansSurvived", humans);
+}
+
+export const emitZombieKillMap = (killMap: object[]) => {
+  emitToSocket(io, "zombieKillMap", killMap);
+}
+
 export const startSocketController = (server) => {
   io = new Server(server, {
     cors: {
@@ -128,12 +137,14 @@ export const startSocketController = (server) => {
     }
     ipSet.add(ipAddress);
 
+    emitZombieKillMap(zombieKillMap);
     emitToSocket(socket, "map", getGameMap());
     emitToSocket(socket, "gameState", getGameState());
     // emitToSocket(socket, "timeLeft", getTimeLeft());
     if (getGameState() === GAME_STATE.MidGame) {
       emitToSocket(socket, "waitingTime", getWaitingTime());
     }
+
     emitToSocket(socket, "wonMessage", getWhoWon());
 
     const newPlayerId = getNextPlayerId();
@@ -152,6 +163,8 @@ export const startSocketController = (server) => {
       delete playerSocketMap[socket.id];
       delete playerIdMap[socket.id];
       removePlayer(playerId);
+
+      if (player.isZombie) removeZombie(player.name);
       io.emit("playerLeft", playerId);
     });
 

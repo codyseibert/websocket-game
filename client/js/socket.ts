@@ -16,6 +16,18 @@ const socket = io(process.env.WS_SERVER ?? "ws://localhost:3000");
 
 let myPlayerId: number | null = null;
 
+let zombieKills: { name: string, kills: 0 }[] = [];
+
+export const getZombieKills = () => {
+  return zombieKills;
+}
+
+let humansSurvived: string[] = [];
+
+export const getHumansSurvived = () => {
+  return humansSurvived;
+}
+
 const emit = (eventName: string, value: any) => {
   if (MOCK_PING_DELAY) {
     setTimeout(() => {
@@ -37,6 +49,25 @@ socket.on("death", (deathEvent) => {
 socket.on("playerLeft", (playerId: number) => {
   removePlayer(playerId);
 });
+
+socket.on("zombieKillMap", (killMap) => {
+  zombieKills = [];
+  for (const zombie of killMap) {
+    zombieKills.push({ name: zombie.name, kills: zombie.kills });
+  }
+})
+
+socket.on("humansSurvived", (humans) => {
+  humansSurvived = humans;
+  console.log(humansSurvived);
+})
+
+socket.on("zombieKillMap", (killMap) => {
+  zombieKills = [];
+  for (const zombie of killMap) {
+    zombieKills.push({ name: zombie.name, kills: zombie.kills });
+  }
+})
 
 socket.on("gameState", (serverGameState) => {
   setGameState(serverGameState);
@@ -94,6 +125,7 @@ export function emitControls(activeControls) {
 
   if (activeControls[CTR_ACTIONS.USE]) {
     emitUse();
+    activeControls[CTR_ACTIONS.USE] = false;
   }
 }
 
