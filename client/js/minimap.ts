@@ -101,9 +101,7 @@ export function drawMinimap(ctx: CanvasRenderingContext2D) {
     MINIMAP_IMAGE.height
   )
 
-  const players = getPlayers();
-  for (let i = 0; i < players.length; i++) {
-    const player = players[i];
+  for (const player of getPlayers()) {
     ctx.fillStyle = player.isZombie ? "#00FF00" : "#FFFFFF";
 
     if (player.y < 2600 && player.x > -110 && player.x < 3900) ctx.fillRect(

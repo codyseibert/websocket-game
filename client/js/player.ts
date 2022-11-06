@@ -107,10 +107,7 @@ function drawArrows(player: TPlayer, camera: Camera) {
 }
 
 export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
-  const playerList = players.getList();
-  for (let i = 0; i < playerList.length; i++) {
-
-    const player = playerList[i];
+  for (const player of players.getList()) {
     const drawPlayer = drawPlayerFactory(ctx, player, camera);
 
     if (DRAW_HITBOX) {
@@ -152,9 +149,7 @@ export function drawPlayers(ctx: CanvasRenderingContext2D, camera: Camera) {
 }
 
 export function updatePlayers(delta: number) {
-  const playerList = players.getList()
-  for (let i = 0; i < playerList.length; i++) {
-    const player = playerList[i]
+  for (const player of players.getList()) {
     const target = interpolations[player.id];
     if (!target) continue;
     const t = Math.min(1, target.t / (1000 / TICK_RATE));
